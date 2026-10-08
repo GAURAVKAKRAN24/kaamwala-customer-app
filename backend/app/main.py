@@ -88,14 +88,23 @@ async def generic_exception_handler(request: Request, exc: Exception):
 def health_check():
     return {"status": "healthy", "service": "KaamWala Backend API", "version": settings.VERSION}
 
-# Mount Frontend static files if directory exists
+# Mount Pure React Mobile App (mobile-app/dist) or fallback
+mobile_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "mobile-app", "dist"))
 frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+
+if os.path.exists(mobile_dist):
+    assets_dir = os.path.join(mobile_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+        
+    @app.get("/")
+    def serve_mobile_index():
+        return FileResponse(os.path.join(mobile_dist, "index.html"))
+
 if os.path.exists(frontend_dir):
     app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+    
+    @app.get("/legacy")
+    def serve_legacy_index():
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
 
-    @app.get("/")
-    def serve_index():
-        index_file = os.path.join(frontend_dir, "index.html")
-        if os.path.exists(index_file):
-            return FileResponse(index_file)
-        return {"message": "KaamWala Backend Running. Open /docs for Swagger API Documentation."}
