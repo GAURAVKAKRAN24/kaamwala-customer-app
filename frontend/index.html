@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KaamWala — Trusted Local Services | कामवाला</title>
+  <!-- Tailwind CSS CDN for modern responsive utility design -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            saffron: {
+              500: '#f97316',
+              600: '#ea580c'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .mobile-frame-container {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .badge-shimmer {
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col items-center">
+
+  <!-- TOP GLOBAL CONTROLS HEADER (Device Frame Toggle, Language Toggle, Backend Status) -->
+  <header class="w-full bg-slate-900 text-white px-4 py-2.5 shadow-md z-50 flex items-center justify-between text-xs sm:text-sm">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-1.5 font-bold tracking-tight text-white text-base">
+        <span class="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center text-white shadow-sm font-black">KW</span>
+        <span>KaamWala</span>
+        <span class="text-brand-400 text-xs font-normal">कामवाला</span>
+      </div>
+      <div class="hidden md:flex items-center gap-1.5 text-xs text-slate-400 ml-2 border-l border-slate-700 pl-3">
+        <span id="backend-status-indicator" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="backend-status-text">FastAPI & PostgreSQL Connected</span>
+      </div>
+    </div>
+
+    <!-- Right Top Bar Controls -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Device View Switcher Toggle -->
+      <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+        <button id="view-mode-mobile" onclick="setDeviceView('mobile')" class="px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 bg-brand-600 text-white shadow-sm transition">
+          <i class="fa-solid fa-mobile-screen"></i>
+          <span class="hidden sm:inline">Mobile App</span>
+        </button>
+        <button id="view-mode-desktop" onclick="setDeviceView('desktop')" class="px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:text-white transition">
+          <i class="fa-solid fa-laptop"></i>
+          <span class="hidden sm:inline">Desktop Web</span>
+        </button>
+      </div>
+
+      <!-- Bilingual Language Selector (English / हिन्दी) -->
+      <div class="flex items-center bg-slate-800 rounded-lg border border-slate-700 p-0.5">
+        <button id="lang-btn-en" onclick="setLanguage('en')" class="px-2 py-1 rounded text-xs font-semibold bg-white text-slate-900 transition">EN</button>
+        <button id="lang-btn-hi" onclick="setLanguage('hi')" class="px-2 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white transition">हिन्दी</button>
+      </div>
+
+      <!-- Quick User/Auth Indicator -->
+      <div id="top-user-pill" onclick="switchNav('profile')" class="cursor-pointer flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-full border border-slate-700 text-xs">
+        <div class="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-[10px]" id="top-user-avatar">R</div>
+        <span class="hidden sm:inline font-medium" id="top-user-name">Rahul Sharma</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER CONTAINER (Allows responsive Desktop Web or Smartphone Mockup) -->
+  <main id="app-container" class="w-full max-w-[430px] my-0 sm:my-4 flex-1 flex flex-col bg-white sm:rounded-[36px] sm:shadow-2xl sm:border-[8px] sm:border-slate-800 overflow-hidden relative min-h-[92vh] max-h-[92vh]">
+
+    <!-- SMARTPHONE NOTCH & STATUS BAR (Visible in Mobile View) -->
+    <div id="mobile-notch-bar" class="w-full bg-white pt-2 px-6 pb-1 flex justify-between items-center text-[11px] font-semibold text-slate-800 select-none border-b border-slate-100 z-30">
+      <span id="current-time-clock">09:41</span>
+      <div class="w-24 h-4 bg-slate-900 rounded-full mx-auto hidden sm:block opacity-90"></div>
+      <div class="flex items-center gap-1.5">
+        <i class="fa-solid fa-signal text-[10px]"></i>
+        <i class="fa-solid fa-wifi text-[10px]"></i>
+        <i class="fa-solid fa-battery-full text-xs text-brand-600"></i>
+      </div>
+    </div>
+
+    <!-- APP HEADER (Sticky under status bar) -->
+    <div class="w-full bg-white px-4 py-2.5 border-b border-slate-100 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md font-bold text-sm">
+          KW
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-base font-extrabold text-slate-900 tracking-tight leading-none" data-i18n="app_title">KaamWala</h1>
+            <span class="bg-brand-100 text-brand-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+              <i class="fa-solid fa-shield-halved text-[8px]"></i> 100% Verified
+            </span>
+          </div>
+          <div class="flex items-center gap-1 text-[11px] text-slate-500 font-medium cursor-pointer hover:text-brand-600 mt-0.5" onclick="openAddressModal()">
+            <i class="fa-solid fa-location-dot text-brand-600 text-[10px]"></i>
+            <span id="header-address-label" class="truncate max-w-[170px]">Indirapuram, Ghaziabad</span>
+            <i class="fa-solid fa-chevron-down text-[8px]"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Emergency 24/7 service quick badge -->
+        <button onclick="openNewRequestModal('Emergency')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition">
+          <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
+          <span data-i18n="emergency_label">24/7 Urgent</span>
+        </button>
+        <!-- In-App Notification Bell -->
+        <button onclick="switchNav('notifications')" class="relative p-2 rounded-full hover:bg-slate-100 text-slate-700 transition">
+          <i class="fa-regular fa-bell text-base"></i>
+          <span id="notif-badge" class="absolute top-1 right-1 w-2 h-2 bg-saffron-500 rounded-full"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCROLLABLE TAB CONTENT BODY -->
+    <div id="main-content-scroll" class="flex-1 overflow-y-auto scrollbar-hide pb-20">
+
+      <!-- ========================================================================= -->
+      <!-- TAB 1: HOME SCREEN -->
+      <!-- ========================================================================= -->
+      <section id="tab-home" class="p-4 space-y-4">
+        
+        <!-- Search Bar with Indian service auto-suggestions -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+          <input type="text" id="home-search-input" oninput="handleSearch(this.value)" placeholder="What service do you need today? (AC, Plumber, RO...)" 
+            class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-10 py-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition shadow-sm font-medium" />
+          <button onclick="document.getElementById('home-search-input').value=''; handleSearch('')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+
+        <!-- ACTIVE BOOKING BANNER (If user has an active job in progress) -->
+        <div id="active-job-banner" class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-3.5 shadow-lg border border-slate-700">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-brand-300" data-i18n="active_service_status">Service In Progress</span>
+            </div>
+            <span id="banner-job-id" class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-mono">KW-904128</span>
+          </div>
+          <div class="flex items-start justify-between">
+            <div>
+              <h4 id="banner-job-title" class="text-sm font-bold text-white">Split AC Deep Cleaning & Cooling</h4>
+              <p id="banner-job-status-desc" class="text-[11px] text-slate-300 mt-0.5">2 Verified quotes received. Ready for comparison.</p>
+            </div>
+            <button onclick="openJobDetail('KW-904128')" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1">
+              <span data-i18n="track_btn">Track</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- KAAMWALA CARE PLANS TICKER -->
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:shadow-md transition" onclick="openCarePlansModal()">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-saffron-500 flex items-center justify-center text-white text-base shadow-sm">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-slate-900" data-i18n="care_card_title">KaamWala Care™ Subscription</span>
+                <span class="bg-amber-200 text-amber-900 text-[9px] font-extrabold px-1.5 py-0.2 rounded">Save 40%</span>
+              </div>
+              <p class="text-[10px] text-slate-600 mt-0.5" data-i18n="care_card_subtitle">Unlimited free inspection visits & genuine spare guarantees.</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-amber-600"></i>
+        </div>
+
+        <!-- SERVICE CATEGORIES GRID -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-screwdriver-wrench text-brand-600 text-xs"></i>
+              <span data-i18n="categories_title">What can we help you fix?</span>
+            </h3>
+            <span class="text-[11px] text-brand-600 font-semibold cursor-pointer" onclick="scrollToWorkers()" data-i18n="view_all">Browse Pros</span>
+          </div>
+
+          <div id="categories-grid" class="grid grid-cols-3 gap-2.5">
+            <!-- Rendered dynamically by JavaScript with all 9 categories -->
+          </div>
+        </div>
+
+        <!-- TRUST & VERIFICATION PILLARS BANNER (PRD Objective: Trust is the core product) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-brand-600"></i>
+              <span data-i18n="trust_title">The KaamWala Trust Promise</span>
+            </h4>
+            <span class="text-[10px] text-slate-500 font-medium">Standard of India</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+            <div class="bg-white p-2 rounded-xl border border-slate-100 shadow-xs">
+              <i class="fa-solid fa-id-card text-brand-600 text-base mb-1"></i>
+              <p class="text-[10px] font-bold text-slate-800 leading-tight" data-i18n="trust_p1_title">Aadhaar & Police Verified</p>
+              <p class="text-[9px] text-slate-400 mt-0.5">100% Identity checked</p>
+            </div>
+            <div class="bg-white p-2 rounded-xl border border-slate-100 shadow-xs">
+              <i class="fa-solid fa-scale-balanced text-brand-600 text-base mb-1"></i>
+              <p class="text-[10px] font-bold text-slate-800 leading-tight" data-i18n="trust_p2_title">Transparent Quotes</p>
+              <p class="text-[9px] text-slate-400 mt-0.5">No hidden charges</p>
+            </div>
+            <div class="bg-white p-2 rounded-xl border border-slate-100 shadow-xs">
+              <i class="fa-solid fa-shield-cat text-brand-600 text-base mb-1"></i>
+              <p class="text-[10px] font-bold text-slate-800 leading-tight" data-i18n="trust_p3_title">30-Day Warranty</p>
+              <p class="text-[9px] text-slate-400 mt-0.5">Rework guarantee</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECOMMENDED & TOP-RATED WORKERS SECTION -->
+        <div id="workers-section">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900" data-i18n="top_workers_title">Top Verified Pros Near You</h3>
+              <p class="text-[10px] text-slate-500" data-i18n="top_workers_sub">Ranked by completion rate, reviews & speed</p>
+            </div>
+            <!-- Filter button -->
+            <button onclick="openFilterModal()" class="flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">
+              <i class="fa-solid fa-sliders text-[10px]"></i>
+              <span data-i18n="filter_btn">Filter</span>
+            </button>
+          </div>
+
+          <div id="workers-list" class="space-y-3">
+            <!-- Dynamic worker cards rendered here -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: JOBS (LIFECYCLE TRACKING, HISTORY, ACTIVE/COMPLETED) -->
+      <!-- ========================================================================= -->
+      <section id="tab-jobs" class="p-4 space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-extrabold text-slate-900" data-i18n="my_jobs_title">My Service Bookings</h2>
+          <button onclick="openNewRequestModal()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-sm transition">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span data-i18n="book_new_service">New Booking</span>
+          </button>
+        </div>
+
+        <!-- Jobs Filter Tabs -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl gap-1">
+          <button id="job-filter-active" onclick="filterJobsTab('active')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-xs transition" data-i18n="tab_active">Active</button>
+          <button id="job-filter-completed" onclick="filterJobsTab('completed')" class="flex-1 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-lg transition" data-i18n="tab_completed">Completed</button>
+          <button id="job-filter-all" onclick="filterJobsTab('all')" class="flex-1 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-lg transition" data-i18n="tab_all">All</button>
+        </div>
+
+        <!-- Jobs List Container -->
+        <div id="jobs-list-container" class="space-y-3 pt-1">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 3: MESSAGES & CHAT -->
+      <!-- ========================================================================= -->
+      <section id="tab-messages" class="p-4 space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900" data-i18n="chat_inbox_title">Conversations</h2>
+            <p class="text-[11px] text-slate-500" data-i18n="chat_inbox_sub">Direct contact with assigned professionals</p>
+          </div>
+          <span class="text-xs bg-brand-100 text-brand-800 px-2 py-0.5 rounded-full font-bold">Encrypted</span>
+        </div>
+
+        <div id="conversations-list" class="space-y-2.5">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 4: NOTIFICATIONS CENTER -->
+      <!-- ========================================================================= -->
+      <section id="tab-notifications" class="p-4 space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-extrabold text-slate-900" data-i18n="notifications_title">Alerts & Updates</h2>
+          <button onclick="markAllNotificationsRead()" class="text-xs text-brand-600 hover:text-brand-700 font-semibold" data-i18n="mark_all_read">Mark all as read</button>
+        </div>
+
+        <div id="notifications-list" class="space-y-2.5">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 5: PROFILE & SETTINGS -->
+      <!-- ========================================================================= -->
+      <section id="tab-profile" class="p-4 space-y-4 hidden">
+        <!-- User Card -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 text-white shadow-md">
+          <div class="flex items-center gap-3">
+            <div id="profile-card-avatar" class="w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-xl flex items-center justify-center border-2 border-white/20 shadow-md">
+              R
+            </div>
+            <div class="flex-1">
+              <h3 id="profile-card-name" class="text-base font-bold text-white">Rahul Sharma</h3>
+              <p id="profile-card-phone" class="text-xs text-slate-300 font-mono">+91 9876543210</p>
+              <div class="flex items-center gap-2 mt-1.5">
+                <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">Verified Customer</span>
+                <span class="bg-amber-400/20 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-400/30">Care Member</span>
+              </div>
+            </div>
+            <button onclick="openEditProfileModal()" class="text-slate-300 hover:text-white p-2">
+              <i class="fa-solid fa-pen-to-square text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+            <div class="text-base font-extrabold text-slate-900" id="profile-stats-completed">2</div>
+            <div class="text-[10px] text-slate-500" data-i18n="completed_services">Services Done</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+            <div class="text-base font-extrabold text-brand-600">₹250</div>
+            <div class="text-[10px] text-slate-500" data-i18n="saved_money">Savings</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+            <div class="text-base font-extrabold text-slate-900" id="profile-stats-reviews">1</div>
+            <div class="text-[10px] text-slate-500" data-i18n="reviews_given">Reviews</div>
+          </div>
+        </div>
+
+        <!-- Menu Options -->
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
+          <button onclick="openAddressModal()" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800" data-i18n="menu_saved_addresses">Saved Addresses</div>
+                <div class="text-[10px] text-slate-500" data-i18n="menu_saved_addresses_sub">Home, Office & GPS locations</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+          </button>
+
+          <button onclick="openCarePlansModal()" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-shield-heart"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800" data-i18n="menu_care_plan">KaamWala Care Protection</div>
+                <div class="text-[10px] text-slate-500">Active annual maintenance membership</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+          </button>
+
+          <button onclick="openSupportModal()" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-headset"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800" data-i18n="menu_support">Help & Support Desk</div>
+                <div class="text-[10px] text-slate-500" data-i18n="menu_support_sub">Raise dispute, report issue & safety</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+          </button>
+
+          <div class="px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-language"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800" data-i18n="menu_language">Language / भाषा</div>
+                <div class="text-[10px] text-slate-500">English / हिन्दी</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+              <button onclick="setLanguage('en')" class="px-2 py-0.5 rounded text-[11px] font-bold bg-white text-slate-900 shadow-xs" id="profile-lang-en">English</button>
+              <button onclick="setLanguage('hi')" class="px-2 py-0.5 rounded text-[11px] font-bold text-slate-500" id="profile-lang-hi">हिन्दी</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security & Session Card -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-lock text-brand-600"></i> Security & Session
+            </span>
+            <span class="text-[10px] text-emerald-600 font-semibold">JWT Active</span>
+          </div>
+          <p class="text-[10px] text-slate-500 leading-relaxed">
+            All requests use parameterized queries, cryptographic OTP verification, and strict Object-Level Authorization (Anti-BOLA/IDOR).
+          </p>
+          <div class="pt-2 flex items-center gap-2">
+            <button onclick="handleLogout()" class="flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-right-from-bracket text-red-500"></i>
+              <span data-i18n="logout_btn">Log Out</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- BOTTOM NAVIGATION BAR (Mobile Style) -->
+    <!-- ========================================================================= -->
+    <nav id="bottom-nav-bar" class="w-full bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 flex justify-around items-center absolute bottom-0 left-0 right-0 z-30 shadow-lg">
+      <button onclick="switchNav('home')" id="nav-btn-home" class="flex flex-col items-center gap-0.5 text-brand-600 font-bold transition">
+        <i class="fa-solid fa-house text-base"></i>
+        <span class="text-[10px]" data-i18n="nav_home">Home</span>
+      </button>
+      <button onclick="switchNav('jobs')" id="nav-btn-jobs" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition relative">
+        <i class="fa-solid fa-clipboard-list text-base"></i>
+        <span class="text-[10px]" data-i18n="nav_jobs">Jobs</span>
+        <span id="nav-job-dot" class="w-1.5 h-1.5 bg-emerald-500 rounded-full absolute top-0 right-1.5"></span>
+      </button>
+      <button onclick="openNewRequestModal()" class="w-11 h-11 -mt-5 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition">
+        <i class="fa-solid fa-plus text-lg"></i>
+      </button>
+      <button onclick="switchNav('messages')" id="nav-btn-messages" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition relative">
+        <i class="fa-solid fa-comment-dots text-base"></i>
+        <span class="text-[10px]" data-i18n="nav_messages">Chat</span>
+        <span class="w-1.5 h-1.5 bg-saffron-500 rounded-full absolute top-0 right-2"></span>
+      </button>
+      <button onclick="switchNav('profile')" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition">
+        <i class="fa-solid fa-user text-base"></i>
+        <span class="text-[10px]" data-i18n="nav_profile">Profile</span>
+      </button>
+    </nav>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CREATE SERVICE REQUEST (6-Step Guided Flow) -->
+  <!-- ========================================================================= -->
+  <div id="modal-new-request" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900" data-i18n="new_req_title">Post Service Request</h3>
+          <p class="text-[11px] text-slate-500" data-i18n="new_req_sub">Get transparent quotes from verified experts</p>
+        </div>
+        <button onclick="closeModal('modal-new-request')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form id="form-new-request" onsubmit="handleCreateRequestSubmit(event)" class="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+        <!-- 1. Category Selection -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_category">Select Category</label>
+          <select id="req-category" onchange="onCategorySelectChange(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <!-- options loaded dynamically -->
+          </select>
+        </div>
+
+        <!-- 2. Specific Service -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_subservice">Specific Service Required</label>
+          <select id="req-subservice" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <!-- loaded dynamically -->
+          </select>
+        </div>
+
+        <!-- 3. Issue Description -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_desc">Describe the Problem / Issue</label>
+          <textarea id="req-description" rows="3" required placeholder="E.g. AC unit is blowing warm air and making a vibration noise..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none font-medium"></textarea>
+        </div>
+
+        <!-- 4. Photo / Media Upload Simulation -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_photo">Add Photos / Short Video (Optional)</label>
+          <div class="border-2 border-dashed border-slate-200 rounded-2xl p-3 text-center cursor-pointer hover:bg-slate-50 transition" onclick="simulatePhotoUpload()">
+            <div id="req-photo-preview-box">
+              <i class="fa-solid fa-camera text-brand-600 text-lg mb-1"></i>
+              <p class="text-[11px] font-semibold text-slate-700" data-i18n="req_photo_cta">Tap to upload photos or take picture</p>
+              <p class="text-[9px] text-slate-400">JPG, PNG, MP4 up to 25MB (Encrypted & private)</p>
+            </div>
+            <div id="req-photo-uploaded" class="hidden flex items-center justify-center gap-2">
+              <span class="text-emerald-600 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> 1 Photo attached</span>
+              <button type="button" onclick="event.stopPropagation(); removeUploadedPhoto()" class="text-red-500 hover:text-red-700 text-xs font-bold underline">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Service Address -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_address">Service Address</label>
+          <select id="req-address" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <option value="addr-001">Flat 402, Shipra Sun City, Indirapuram (Home)</option>
+            <option value="addr-002">Floor 3, TechZone 4, Sector 62, Noida (Office)</option>
+          </select>
+        </div>
+
+        <!-- 6. Schedule Slot -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_date">Preferred Date</label>
+            <select id="req-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 font-medium focus:outline-none">
+              <option value="Today (Immediate)">Today (Urgent)</option>
+              <option value="Tomorrow (Fri)">Tomorrow</option>
+              <option value="This Weekend (Sat)">This Weekend</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_time">Preferred Time</label>
+            <select id="req-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 font-medium focus:outline-none">
+              <option value="Immediate (within 45 mins)">Immediate (45m)</option>
+              <option value="10:00 AM - 12:00 PM">Morning (10-12)</option>
+              <option value="02:00 PM - 04:00 PM">Afternoon (2-4)</option>
+              <option value="05:00 PM - 07:00 PM">Evening (5-7)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 7. Special Instructions -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="req_field_instructions">Special Instructions (Optional)</label>
+          <input type="text" id="req-instructions" placeholder="E.g. Please call before arriving at security gate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none font-medium">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" id="btn-submit-request" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+            <span data-i18n="req_submit_btn">Post Request & Find Pros</span>
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: JOB DETAIL & 11-STAGE INTERACTIVE LIFECYCLE TRACKER -->
+  <!-- ========================================================================= -->
+  <div id="modal-job-detail" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <!-- Header -->
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xs" id="jd-category-icon">
+            ❄️
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm font-extrabold text-slate-900" id="jd-service-name">Split AC Repair</h3>
+              <span class="text-[10px] font-mono bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold" id="jd-id">KW-904128</span>
+            </div>
+            <p class="text-[10px] text-slate-500" id="jd-date-time">Tomorrow 10:00 AM</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-job-detail')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Body Scrollable -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+
+        <!-- CURRENT STATUS BANNER -->
+        <div class="bg-slate-900 text-white rounded-2xl p-3.5 shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-brand-300">Current Lifecycle State</span>
+            <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-brand-500 text-white" id="jd-status-badge">QUOTATIONS_RECEIVED</span>
+          </div>
+          <p class="text-xs text-slate-200" id="jd-status-description">Multiple verified quotes received. Please compare and select your preferred professional.</p>
+        </div>
+
+        <!-- INTERACTIVE LIFECYCLE SIMULATOR CONTROLS (Lets user test & advance states easily) -->
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i>
+              Interactive Lifecycle Simulator
+            </span>
+            <span class="text-[9px] text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded font-semibold">Demo Sandbox</span>
+          </div>
+          <p class="text-[10px] text-amber-800 mb-2">Simulate real-time worker actions across the full 11-stage PRD lifecycle:</p>
+          <div class="flex flex-wrap gap-1.5" id="jd-sim-controls">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+
+        <!-- 11-STAGE VISUAL LIFECYCLE STEPPER -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+          <h4 class="text-xs font-bold text-slate-900 mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-timeline text-brand-600"></i> 11-Stage KaamWala Lifecycle Timeline
+          </h4>
+          <div class="space-y-3" id="jd-lifecycle-timeline">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+
+        <!-- QUOTATIONS COMPARISON SECTION (Visible when in QUOTATIONS_RECEIVED or REQUESTED) -->
+        <div id="jd-quotes-section" class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1">
+              <i class="fa-solid fa-scale-balanced text-brand-600"></i>
+              <span>Available Professional Quotations</span>
+            </h4>
+            <span class="text-[10px] text-slate-500" id="jd-quotes-count">2 Quotes</span>
+          </div>
+          <div id="jd-quotes-list" class="space-y-2.5">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- ASSIGNED WORKER CARD (Visible once worker is selected) -->
+        <div id="jd-assigned-worker-card" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-2.5 hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Assigned Professional</span>
+            <span class="bg-brand-100 text-brand-800 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <i class="fa-solid fa-shield-check"></i> Identity & Skill Verified
+            </span>
+          </div>
+          <div class="flex items-center gap-3">
+            <img id="jd-worker-img" src="" alt="Worker" class="w-12 h-12 rounded-xl object-cover border border-slate-200">
+            <div class="flex-1">
+              <h5 class="text-xs font-extrabold text-slate-900" id="jd-worker-name">Manoj Kumar Verma</h5>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-600 mt-0.5">
+                <span class="text-amber-500 font-bold flex items-center gap-0.5">
+                  <i class="fa-solid fa-star text-[9px]"></i> <span id="jd-worker-rating">4.9</span>
+                </span>
+                <span>•</span>
+                <span id="jd-worker-jobs">310 Jobs completed</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <!-- Masked Calling Button -->
+              <button onclick="triggerMaskedCall()" class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-brand-600 flex items-center justify-center transition shadow-xs" title="Masked Call">
+                <i class="fa-solid fa-phone text-xs"></i>
+              </button>
+              <!-- Chat Button -->
+              <button onclick="openChatForCurrentJob()" class="w-8 h-8 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition shadow-xs" title="Open In-App Chat">
+                <i class="fa-solid fa-comment-dots text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BEFORE & AFTER EVIDENCE GALLERY -->
+        <div id="jd-evidence-gallery" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2 hidden">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600">Before & After Work Evidence</span>
+          <div class="grid grid-cols-2 gap-2" id="jd-evidence-images">
+            <!-- Evidence photos -->
+          </div>
+        </div>
+
+        <!-- ACTION FOOTER: Payment or Review trigger -->
+        <div id="jd-action-footer" class="pt-2">
+          <!-- Injected dynamically based on stage (e.g. Pay Now, Write Review, Download Invoice) -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: WORKER PROFILE VIEW -->
+  <!-- ========================================================================= -->
+  <div id="modal-worker-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <!-- Header -->
+      <div class="relative bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white">
+        <button onclick="closeModal('modal-worker-profile')" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex items-center gap-3.5">
+          <img id="wp-photo" src="" alt="Worker" class="w-16 h-16 rounded-2xl object-cover border-2 border-brand-400 shadow-md">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h3 id="wp-name" class="text-base font-extrabold text-white">Manoj Verma</h3>
+              <i class="fa-solid fa-circle-check text-brand-400 text-sm"></i>
+            </div>
+            <p id="wp-category" class="text-xs text-brand-300 font-semibold">AC Repair Specialist</p>
+            <p id="wp-experience" class="text-[10px] text-slate-300">8 Years Experience • 310 Completed</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges row -->
+      <div class="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center gap-2 overflow-x-auto scrollbar-hide text-[10px] font-bold">
+        <span class="bg-brand-100 text-brand-800 px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap">
+          <i class="fa-solid fa-id-card text-[9px]"></i> Identity Verified
+        </span>
+        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap">
+          <i class="fa-solid fa-certificate text-[9px]"></i> Skill Verified
+        </span>
+        <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap">
+          <i class="fa-solid fa-star text-[9px]"></i> Top Rated
+        </span>
+        <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap">
+          <i class="fa-solid fa-bolt text-[9px]"></i> Fast Responder
+        </span>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+            <div class="text-sm font-extrabold text-amber-500 flex items-center justify-center gap-0.5">
+              <i class="fa-solid fa-star text-xs"></i> <span id="wp-stat-rating">4.9</span>
+            </div>
+            <div class="text-[9px] text-slate-400">Rating</div>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+            <div class="text-sm font-extrabold text-slate-900" id="wp-stat-ontime">99%</div>
+            <div class="text-[9px] text-slate-400">On-Time</div>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+            <div class="text-sm font-extrabold text-slate-900" id="wp-stat-speed">10m</div>
+            <div class="text-[9px] text-slate-400">Response</div>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+            <div class="text-sm font-extrabold text-slate-900" id="wp-stat-fee">₹199</div>
+            <div class="text-[9px] text-slate-400">Visit Fee</div>
+          </div>
+        </div>
+
+        <!-- Bio & Skills -->
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">About & Skills</h4>
+          <p id="wp-bio" class="text-slate-600 text-[11px] leading-relaxed mb-2"></p>
+          <div id="wp-skills-pills" class="flex flex-wrap gap-1"></div>
+        </div>
+
+        <!-- Service Areas -->
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">Service Coverage Areas</h4>
+          <p id="wp-areas" class="text-slate-600 text-[11px] flex items-center gap-1">
+            <i class="fa-solid fa-location-dot text-brand-600"></i> Indirapuram, Noida Sec 62, East Delhi
+          </p>
+        </div>
+
+        <!-- Verified Customer Reviews Section -->
+        <div>
+          <h4 class="font-bold text-slate-900 mb-2 flex items-center justify-between">
+            <span>Verified Customer Reviews</span>
+            <span class="text-[10px] text-slate-400" id="wp-reviews-count">42 reviews</span>
+          </h4>
+          <div id="wp-reviews-list" class="space-y-2">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="p-3 border-t border-slate-100 bg-slate-50 flex items-center gap-2">
+        <button onclick="triggerMaskedCall()" class="flex-1 bg-white hover:bg-slate-100 border border-slate-200 py-2.5 rounded-xl text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-phone text-brand-600"></i> Masked Call
+        </button>
+        <button onclick="bookThisWorkerDirectly()" class="flex-1 bg-brand-600 hover:bg-brand-700 py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 shadow-md transition">
+          <i class="fa-solid fa-calendar-check"></i> Book Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: IN-APP CHAT (Customer <-> Worker with Job Context) -->
+  <!-- ========================================================================= -->
+  <div id="modal-chat" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <!-- Chat Header -->
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <button onclick="closeModal('modal-chat')" class="text-slate-300 hover:text-white mr-1">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="w-9 h-9 rounded-full bg-brand-500 text-white font-bold flex items-center justify-center text-xs" id="chat-header-avatar">M</div>
+          <div>
+            <div class="flex items-center gap-1">
+              <h4 class="text-xs font-extrabold text-white" id="chat-header-name">Manoj Kumar</h4>
+              <i class="fa-solid fa-circle-check text-brand-400 text-[10px]"></i>
+            </div>
+            <p class="text-[10px] text-slate-300" id="chat-header-job-id">Job #KW-904128 • Online</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="triggerMaskedCall()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-brand-400">
+            <i class="fa-solid fa-phone text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Stream -->
+      <div id="chat-messages-stream" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 text-xs">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Input Bar -->
+      <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+        <button type="button" onclick="simulateChatPhotoAttachment()" class="text-slate-400 hover:text-brand-600 p-2" title="Attach Photo">
+          <i class="fa-solid fa-paperclip"></i>
+        </button>
+        <input type="text" id="chat-input" placeholder="Type a message to technician..." required class="flex-1 bg-slate-100 border border-slate-200 rounded-full px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white font-medium">
+        <button type="submit" class="w-8 h-8 rounded-full bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center shadow-sm">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SECURE PAYMENT CHECKOUT & GST INVOICE -->
+  <!-- ========================================================================= -->
+  <div id="modal-payment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <!-- Header -->
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900" data-i18n="pay_title">KaamWala Secure Payment</h3>
+          <p class="text-[10px] text-slate-500">100% Server-verified escrow & GST receipt</p>
+        </div>
+        <button onclick="closeModal('modal-payment')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        <!-- Itemized Bill Breakdown -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+          <h4 class="font-bold text-slate-900 text-xs mb-2 flex items-center justify-between">
+            <span data-i18n="bill_summary">Authoritative Bill Breakdown</span>
+            <span class="text-[10px] text-brand-600 font-semibold" id="pay-job-id">Job #KW-904128</span>
+          </h4>
+          <div class="flex justify-between text-slate-600">
+            <span data-i18n="base_service">Service & Inspection Fee</span>
+            <span id="pay-base-charge">₹699.00</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span data-i18n="platform_fee">Safety & Platform Fee</span>
+            <span id="pay-platform-fee">₹19.00</span>
+          </div>
+          <div class="flex justify-between text-emerald-600 font-semibold">
+            <span>Promotional Discount (<span id="pay-coupon-code">FIRST100</span>)</span>
+            <span id="pay-discount-amount">- ₹100.00</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>GST (18% as per Govt rules)</span>
+            <span id="pay-gst-amount">₹111.24</span>
+          </div>
+          <div class="border-t border-slate-200 pt-2 flex justify-between font-extrabold text-slate-900 text-sm">
+            <span data-i18n="total_payable">Total Amount Payable</span>
+            <span class="text-brand-600" id="pay-total-amount">₹729.24</span>
+          </div>
+        </div>
+
+        <!-- Coupon Code Input -->
+        <div class="flex gap-2">
+          <input type="text" id="coupon-input" value="FIRST100" placeholder="Enter promo code (e.g. FIRST100)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <button onclick="applyCouponCode()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition">Apply</button>
+        </div>
+
+        <!-- Indian Payment Provider Options -->
+        <div>
+          <h4 class="font-bold text-slate-900 mb-2" data-i18n="select_payment_method">Select Payment Method</h4>
+          <div class="space-y-2">
+            <!-- UPI -->
+            <label class="flex items-center justify-between p-3 border border-brand-500 bg-brand-50/40 rounded-2xl cursor-pointer">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="pay-method" value="UPI" checked class="text-brand-600 focus:ring-brand-500">
+                <div>
+                  <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                    <span>UPI (Instant Zero-Fee)</span>
+                    <span class="bg-brand-200 text-brand-900 text-[8px] font-bold px-1.5 py-0.2 rounded">Recommended</span>
+                  </div>
+                  <div class="text-[10px] text-slate-500">Google Pay, PhonePe, Paytm, BHIM</div>
+                </div>
+              </div>
+              <i class="fa-brands fa-google-pay text-xl text-slate-700"></i>
+            </label>
+
+            <!-- Cards -->
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="pay-method" value="CARD" class="text-brand-600 focus:ring-brand-500">
+                <div>
+                  <div class="font-bold text-slate-900">Credit / Debit Card</div>
+                  <div class="text-[10px] text-slate-500">Visa, Mastercard, RuPay, Maestro</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-credit-card text-slate-500"></i>
+            </label>
+
+            <!-- Netbanking -->
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="pay-method" value="NETBANKING" class="text-brand-600 focus:ring-brand-500">
+                <div>
+                  <div class="font-bold text-slate-900">Net Banking</div>
+                  <div class="text-[10px] text-slate-500">HDFC, SBI, ICICI, Axis & 50+ Banks</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-building-columns text-slate-500"></i>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Checkout Trigger -->
+      <div class="p-3 border-t border-slate-100 bg-slate-50">
+        <button onclick="handleCompletePayment()" id="btn-pay-confirm" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+          <span>Authorize & Pay</span>
+          <span id="btn-pay-amount">₹729.24</span>
+          <i class="fa-solid fa-lock text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: WRITE VERIFIED REVIEW & RATING -->
+  <!-- ========================================================================= -->
+  <div id="modal-review" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900" data-i18n="rate_title">Rate & Review Technician</h3>
+          <p class="text-[10px] text-slate-500">Verified Job review linked to completed Job ID</p>
+        </div>
+        <button onclick="closeModal('modal-review')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <form id="form-review" onsubmit="handleReviewSubmit(event)" class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        <!-- Overall Stars -->
+        <div class="text-center bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+          <span class="font-bold text-slate-800 text-xs block mb-1.5" data-i18n="overall_rating_label">Overall Service Rating</span>
+          <div class="flex items-center justify-center gap-2 text-2xl text-amber-400" id="star-picker">
+            <i class="fa-solid fa-star cursor-pointer hover:scale-125 transition" onclick="setStarRating(1)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:scale-125 transition" onclick="setStarRating(2)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:scale-125 transition" onclick="setStarRating(3)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:scale-125 transition" onclick="setStarRating(4)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:scale-125 transition" onclick="setStarRating(5)"></i>
+          </div>
+          <span id="star-rating-label" class="text-[11px] font-bold text-brand-700 mt-1 block">5.0 - Excellent Service</span>
+        </div>
+
+        <!-- 4 Sub-ratings required by PRD Section 13 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2.5">
+          <span class="font-bold text-slate-800 text-xs block" data-i18n="subratings_title">Detailed Performance Feedback</span>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Work Quality & Cleaning</span>
+            <select id="sub-quality" class="bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold">
+              <option value="5">5 ★ High Quality</option>
+              <option value="4">4 ★ Good</option>
+              <option value="3">3 ★ Average</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Professional Behaviour</span>
+            <select id="sub-behaviour" class="bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold">
+              <option value="5">5 ★ Very Polite</option>
+              <option value="4">4 ★ Courteous</option>
+              <option value="3">3 ★ Acceptable</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Punctuality / On-Time</span>
+            <select id="sub-ontime" class="bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold">
+              <option value="5">5 ★ Reached on time</option>
+              <option value="4">4 ★ Slight delay</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Fairness of Pricing</span>
+            <select id="sub-price" class="bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold">
+              <option value="5">5 ★ Very Fair & Transparent</option>
+              <option value="4">4 ★ Reasonable</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Text Review -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1" data-i18n="write_review_label">Write your experience</label>
+          <textarea id="review-text" rows="3" required placeholder="Describe how the technician diagnosed and solved your issue..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+        </div>
+
+        <!-- Photo upload -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Optional Photo/Video Proof</label>
+          <button type="button" onclick="simulateReviewPhotoUpload()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-camera text-brand-600"></i>
+            <span id="review-photo-btn-text">Add Work Photo</span>
+          </button>
+        </div>
+
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+          <span data-i18n="submit_review_btn">Publish Verified Review</span>
+          <i class="fa-solid fa-check text-xs"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: OFFICIAL GST TAX INVOICE & RECEIPT (Downloadable / Printable) -->
+  <!-- ========================================================================= -->
+  <div id="modal-invoice" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 class="text-sm font-extrabold text-slate-900">Tax Invoice & Receipt</h3>
+        <button onclick="closeModal('modal-invoice')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-5 space-y-4 text-xs font-sans" id="invoice-printable-area">
+        <!-- Invoice Header -->
+        <div class="flex justify-between items-start border-b border-slate-200 pb-3">
+          <div>
+            <h2 class="text-base font-black text-brand-600">KaamWala</h2>
+            <p class="text-[9px] text-slate-500">KaamWala Technologies India Pvt Ltd</p>
+            <p class="text-[9px] text-slate-500 font-mono">GSTIN: 07AAAAK0000A1Z5</p>
+          </div>
+          <div class="text-right">
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">PAID</span>
+            <p class="text-[10px] font-mono text-slate-600 mt-1" id="inv-number">INV-KW-2026-0841</p>
+            <p class="text-[9px] text-slate-400" id="inv-date">08 Oct 2026</p>
+          </div>
+        </div>
+
+        <!-- Billed to -->
+        <div class="grid grid-cols-2 gap-2 text-[10px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+          <div>
+            <span class="text-slate-400 block font-semibold">CUSTOMER:</span>
+            <span class="font-bold text-slate-800" id="inv-cust-name">Rahul Sharma</span>
+            <span class="text-slate-500 block" id="inv-cust-phone">+91 9876543210</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block font-semibold">SERVICE LOCATION:</span>
+            <span class="text-slate-700 block" id="inv-cust-address">Indirapuram, Ghaziabad</span>
+          </div>
+        </div>
+
+        <!-- Items table -->
+        <table class="w-full text-[11px]">
+          <thead class="border-b border-slate-200 text-slate-400 text-[10px]">
+            <tr>
+              <th class="text-left py-1.5 font-semibold">Description</th>
+              <th class="text-right py-1.5 font-semibold">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td class="py-2" id="inv-item-desc">Water Purifier Filter & Service</td>
+              <td class="py-2 text-right font-mono" id="inv-item-amount">₹1,150.00</td>
+            </tr>
+            <tr>
+              <td class="py-1.5 text-slate-500">Platform Safety Fee</td>
+              <td class="py-1.5 text-right font-mono text-slate-500">₹19.00</td>
+            </tr>
+            <tr class="text-emerald-600">
+              <td class="py-1.5">Coupon Discount (FIRST100)</td>
+              <td class="py-1.5 text-right font-mono">- ₹100.00</td>
+            </tr>
+            <tr>
+              <td class="py-1.5 text-slate-500">IGST (18%)</td>
+              <td class="py-1.5 text-right font-mono text-slate-500" id="inv-item-gst">₹192.42</td>
+            </tr>
+            <tr class="border-t-2 border-slate-900 font-extrabold text-slate-900">
+              <td class="py-2 text-xs">Total Amount Paid</td>
+              <td class="py-2 text-right text-xs font-mono text-brand-600" id="inv-total-paid">₹1,069.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Payment reference -->
+        <div class="bg-slate-50 p-2 rounded-xl text-[10px] text-slate-500 space-y-0.5 border border-slate-100">
+          <p><strong class="text-slate-700">Payment Mode:</strong> UPI (Verified)</p>
+          <p><strong class="text-slate-700">Provider Ref:</strong> <span class="font-mono" id="inv-ref-id">KW-TXN-84920194</span></p>
+          <p class="text-[9px] text-slate-400 mt-1 italic">This is an authorized computer-generated GST tax receipt.</p>
+        </div>
+      </div>
+
+      <div class="p-3 border-t border-slate-100 bg-slate-50 flex gap-2">
+        <button onclick="window.print()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-print"></i> Print Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: MASKED TELEPHONY CALL SIMULATION -->
+  <!-- ========================================================================= -->
+  <div id="modal-masked-call" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-5 text-center shadow-2xl animate-in fade-in zoom-in-95 space-y-3">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-brand-600 flex items-center justify-center mx-auto text-2xl animate-pulse">
+        <i class="fa-solid fa-phone"></i>
+      </div>
+      <div>
+        <h4 class="text-sm font-extrabold text-slate-900">KaamWala Masked Telephony</h4>
+        <p class="text-[10px] text-slate-500 mt-1">Calling via secure virtual relay bridge</p>
+      </div>
+      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[11px] text-left space-y-1">
+        <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
+          <i class="fa-solid fa-shield-halved"></i> 100% Privacy Protected
+        </div>
+        <p class="text-[10px] text-slate-500">Neither your phone number nor the technician's private number is exposed.</p>
+        <p class="text-[10px] text-slate-400 font-mono">Virtual DID: +91 11-4089-9800</p>
+      </div>
+      <button onclick="closeModal('modal-masked-call')" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs transition">
+        End Call
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: KAAMWALA CARE PLANS SUBSCRIPTION -->
+  <!-- ========================================================================= -->
+  <div id="modal-care-plans" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-amber-50">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-crown text-amber-500 text-base"></i>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900" data-i18n="care_modal_title">KaamWala Care™ Protection</h3>
+            <p class="text-[10px] text-slate-500">Zero visit charges all year long</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-care-plans')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 text-xs" id="care-plans-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SAVED ADDRESSES MANAGEMENT -->
+  <!-- ========================================================================= -->
+  <div id="modal-addresses" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 class="text-sm font-extrabold text-slate-900" data-i18n="addr_modal_title">Saved Service Addresses</h3>
+        <button onclick="closeModal('modal-addresses')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+        <div id="saved-addresses-list" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Add Address Form -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+          <h4 class="font-bold text-slate-900">Add New Address</h4>
+          <input type="text" id="new-addr-label" placeholder="Label (Home / Office / Parents)" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs">
+          <textarea id="new-addr-line" rows="2" placeholder="Full House / Flat No, Society, Street..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"></textarea>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="new-addr-landmark" placeholder="Nearby Landmark" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs">
+            <input type="text" id="new-addr-city" value="Indirapuram / NCR" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs">
+          </div>
+          <button onclick="handleSaveNewAddress()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 rounded-xl text-xs transition">
+            Save Address
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: HELP & SUPPORT TICKETS -->
+  <!-- ========================================================================= -->
+  <div id="modal-support" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900" data-i18n="support_modal_title">KaamWala Help Desk</h3>
+          <p class="text-[10px] text-slate-500">24x7 Dispute Resolution & Trust Protection</p>
+        </div>
+        <button onclick="closeModal('modal-support')" class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <form id="form-support" onsubmit="handleSupportSubmit(event)" class="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Issue Category</label>
+          <select id="sup-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium">
+            <option value="Job Quality">Job Quality Dispute</option>
+            <option value="Billing / Payment">Billing or Payment Issue</option>
+            <option value="Worker Behavior">Technician Behavior Concern</option>
+            <option value="Warranty Claim">30-Day Warranty Claim</option>
+            <option value="Cancellation">Cancellation / Refund</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Related Job ID (Optional)</label>
+          <input type="text" id="sup-job-id" value="KW-904128" placeholder="e.g. KW-904128" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Subject</label>
+          <input type="text" id="sup-subject" required placeholder="Brief summary of your inquiry" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Details</label>
+          <textarea id="sup-desc" rows="3" required placeholder="Provide specific details so our Operations Team can investigate immediately..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-extrabold py-3 rounded-2xl transition">
+          Submit Support Ticket
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center gap-2"></div>
+
+  <!-- LOAD APP SCRIPT -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
