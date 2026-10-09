@@ -255,6 +255,8 @@ class AppState extends ChangeNotifier {
           title: '${worker.name} accepted your request!',
           subtitle: '${_activeJob.id} • Arriving in 12 min',
           time: 'Just now',
+          isRead: false,
+          type: 'worker',
         ),
       );
 

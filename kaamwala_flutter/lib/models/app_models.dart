@@ -122,7 +122,7 @@ class CustomerJob {
   int finalAmount;
   WorkerProfile? assignedWorker;
   final List<String> mediaUrls;
-  final String? arrivalEta;
+  String? arrivalEta;
   bool isInspectionApproved;
   bool isCompletedConfirmed;
 
@@ -188,7 +188,7 @@ class AppUser {
   String avatar;
   final String authProvider;
   final bool isAadhaarVerified;
-  final int profileCompletion; // 0 to 100
+  int profileCompletion; // 0 to 100
 
   AppUser({
     required this.id,
@@ -207,13 +207,17 @@ class NotificationItem {
   final String title;
   final String subtitle;
   final String time;
-  final bool isUnread;
+  final bool isRead;
+  final String type;
 
   const NotificationItem({
     required this.id,
     required this.title,
     required this.subtitle,
     required this.time,
-    this.isUnread = true,
+    this.isRead = false,
+    this.type = 'default',
   });
+
+  bool get isUnread => !isRead;
 }
