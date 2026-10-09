@@ -3,9 +3,6 @@ plugins {
     id "kotlin-android"
 }
 
-// Apply Flutter plugin using the new declarative approach
-apply plugin: 'dev.flutter.flutter-gradle-plugin'
-
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -23,6 +20,18 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
     flutterVersionName = '1.0.0'
 }
+
+// Define flutterRoot with robust resolution: local.properties -> FLUTTER_ROOT env -> project parent
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    flutterRoot = System.getenv('FLUTTER_ROOT')
+}
+if (flutterRoot == null) {
+    flutterRoot = rootProject.file('../..').absolutePath
+}
+
+// Apply Flutter Gradle tools using the traditional stable approach
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace "com.kaamwala.customer"
