@@ -45,6 +45,7 @@ class ServiceCategory {
   final String name;
   final String nameHi;
   final String icon;
+  final String imageUrl;
   final String bookingCount;
   final String desc;
   final int startingPrice;
@@ -55,6 +56,7 @@ class ServiceCategory {
     required this.name,
     required this.nameHi,
     required this.icon,
+    this.imageUrl = '',
     required this.bookingCount,
     required this.desc,
     required this.startingPrice,
@@ -221,3 +223,52 @@ class NotificationItem {
 
   bool get isUnread => !isRead;
 }
+
+class BankAccount {
+  final String id;
+  final String bankName;
+  final String accountNumber;
+  final String ifscCode;
+  final String holderName;
+  final bool isPrimary;
+
+  const BankAccount({
+    required this.id,
+    required this.bankName,
+    required this.accountNumber,
+    required this.ifscCode,
+    required this.holderName,
+    this.isPrimary = true,
+  });
+
+  String get maskedNumber => '•••• •••• ${accountNumber.length >= 4 ? accountNumber.substring(accountNumber.length - 4) : accountNumber}';
+}
+
+class SavedUpi {
+  final String id;
+  final String upiId;
+  final String provider;
+  final bool isDefault;
+
+  const SavedUpi({
+    required this.id,
+    required this.upiId,
+    required this.provider,
+    this.isDefault = true,
+  });
+}
+
+class FaqItem {
+  final String id;
+  final String question;
+  final String answer;
+  final String category;
+
+  const FaqItem({
+    required this.id,
+    required this.question,
+    required this.answer,
+    required this.category,
+  });
+}
+

@@ -59,7 +59,12 @@ class _MobileAuthScreenState extends State<MobileAuthScreen> {
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) {
         setState(() => _isVerifying = false);
-        widget.appState.navigateTo('app');
+        widget.appState.login(
+          name: 'Ankit Verma',
+          email: 'ankit@email.com',
+          phone: '+91 ${_phoneController.text.trim()}',
+          method: 'phone_otp',
+        );
       }
     });
   }

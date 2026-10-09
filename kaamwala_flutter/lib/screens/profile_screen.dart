@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/app_state.dart';
 import 'address_screen.dart';
+import 'bank_details_screen.dart';
+import 'faq_screen.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final AppState appState;
@@ -288,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Text(
-                            'Aadhaar KYC Verified',
+                            'Verified Customer • Priority Dispatch',
                             style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
                           ),
                         ),
@@ -661,7 +664,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle: const Text('Phone masking active on all bookings'),
                     trailing: const Icon(Icons.check_circle, color: Color(0xFF0F766E), size: 20),
                   ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.account_balance_outlined, color: Color(0xFF0F766E)),
+                    title: const Text('Bank Accounts & Saved UPI'),
+                    subtitle: const Text('For instant refunds & wallet cashouts'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BankDetailsScreen(appState: widget.appState)),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.help_outline, color: Color(0xFF0F766E)),
+                    title: const Text('FAQ & Help Center'),
+                    subtitle: const Text('Doorstep policies, warranty & pricing'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const FaqScreen()),
+                      );
+                    },
+                  ),
                 ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 7. Log Out Button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: _showLogoutConfirmDialog,
+                icon: const Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
+                label: const Text(
+                  'Log Out',
+                  style: TextStyle(
+                    color: Color(0xFFDC2626),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFFFECACA), width: 1.5),
+                  backgroundColor: const Color(0xFFFEF2F2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
               ),
             ),
 
@@ -672,6 +726,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 30),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLogoutConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text(
+          'Are you sure you want to log out of KaamWala? You will need to sign in again to book services.',
+          style: TextStyle(fontSize: 14, color: Color(0xFF52525B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF71717A))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.appState.logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

@@ -23,7 +23,8 @@ class ChatMessage {
 
 class AppState extends ChangeNotifier {
   // Onboarding Screen Tracker
-  String _currentRoute = 'splash'; // 'splash', 'lang', 'address', 'otp', 'app'
+  String _currentRoute = 'splash'; // 'splash', 'lang', 'address', 'otp', 'login', 'app'
+  bool _isLoggedIn = true;
 
   // Locale (en / hi)
   String _language = 'en';
@@ -39,6 +40,10 @@ class AppState extends ChangeNotifier {
     isAadhaarVerified: true,
     profileCompletion: 40, // Shows Incomplete banner as specified
   );
+
+  // Bank & UPI details
+  final List<BankAccount> _bankAccounts = List.from(MockRepository.defaultBankAccounts);
+  final List<SavedUpi> _savedUpis = List.from(MockRepository.defaultSavedUpis);
 
   // Active Location (Sector 18, Noida default)
   Locality _currentLocality = MockRepository.localities.first;
@@ -165,6 +170,7 @@ class AppState extends ChangeNotifier {
 
   // Getters
   String get currentRoute => _currentRoute;
+  bool get isLoggedIn => _isLoggedIn;
   String get language => _language;
   AppUser get currentUser => _currentUser;
   Locality get currentLocality => _currentLocality;
@@ -175,6 +181,8 @@ class AppState extends ChangeNotifier {
   List<WalletTransaction> get walletTransactions => _walletTransactions;
   ReferralInfo get referralInfo => _referralInfo;
   List<NotificationItem> get notifications => _notifications;
+  List<BankAccount> get bankAccounts => _bankAccounts;
+  List<SavedUpi> get savedUpis => _savedUpis;
 
   // Onboarding Navigators
   void navigateTo(String route) {
@@ -189,6 +197,86 @@ class AppState extends ChangeNotifier {
 
   void setLocality(Locality locality) {
     _currentLocality = locality;
+    notifyListeners();
+  }
+
+  // Authentication
+  void login({
+    required String name,
+    required String email,
+    required String phone,
+    required String method,
+  }) {
+    _currentUser = AppUser(
+      id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+      email: email,
+      phone: phone,
+      avatar: name.isNotEmpty ? name[0].toUpperCase() : 'U',
+      authProvider: method,
+      isAadhaarVerified: true,
+      profileCompletion: (name.isNotEmpty && email.isNotEmpty) ? 100 : 60,
+    );
+    _isLoggedIn = true;
+    _currentRoute = 'app';
+    notifyListeners();
+  }
+
+  void logout() {
+    _isLoggedIn = false;
+    _currentRoute = 'login';
+    notifyListeners();
+  }
+
+  // Bank & UPI Management
+  void addBankAccount(BankAccount account) {
+    _bankAccounts.add(account);
+    notifyListeners();
+  }
+
+  void removeBankAccount(String id) {
+    _bankAccounts.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
+
+  void addSavedUpi(SavedUpi upi) {
+    _savedUpis.add(upi);
+    notifyListeners();
+  }
+
+  void removeSavedUpi(String id) {
+    _savedUpis.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
+
+  // Notification management
+  void markNotificationAsRead(String id) {
+    final idx = _notifications.indexWhere((n) => n.id == id);
+    if (idx != -1) {
+      final old = _notifications[idx];
+      _notifications[idx] = NotificationItem(
+        id: old.id,
+        title: old.title,
+        subtitle: old.subtitle,
+        time: old.time,
+        isRead: true,
+        type: old.type,
+      );
+      notifyListeners();
+    }
+  }
+
+  void markAllNotificationsAsRead() {
+    _notifications = _notifications.map((n) {
+      return NotificationItem(
+        id: n.id,
+        title: n.title,
+        subtitle: n.subtitle,
+        time: n.time,
+        isRead: true,
+        type: n.type,
+      );
+    }).toList();
     notifyListeners();
   }
 

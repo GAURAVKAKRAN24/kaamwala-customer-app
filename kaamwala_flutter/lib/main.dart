@@ -5,6 +5,7 @@ import 'screens/bookings_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/language_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/mobile_auth_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
@@ -76,8 +77,13 @@ class _KaamWalaAppState extends State<KaamWalaApp> {
         return AddressScreen(appState: _appState);
       case 'otp':
         return MobileAuthScreen(appState: _appState);
+      case 'login':
+        return LoginScreen(appState: _appState);
       case 'app':
       default:
+        if (!_appState.isLoggedIn) {
+          return LoginScreen(appState: _appState);
+        }
         return MainNavigationContainer(appState: _appState);
     }
   }
