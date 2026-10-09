@@ -60,39 +60,20 @@ export default function JobDetailModal({
         {/* Scrollable Body */}
         <div className="p-4 overflow-y-auto space-y-4 text-xs scrollbar-hide">
           
-          {/* SIMULATOR TOOLBAR */}
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-extrabold text-amber-900 flex items-center gap-1">
-                <Wrench className="w-3.5 h-3.5 text-amber-600" />
-                <span>Lifecycle Simulator</span>
-              </span>
-              <span className="text-[9px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.2 rounded">1-Tap Testing</span>
+          {/* REAL DOORSTEP STATUS BANNER */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-emerald-950 text-xs">KaamWala Doorstep Protection</h4>
+                <p className="text-[10px] text-emerald-700">Verified Pro with standard equipment & 30-day warranty</p>
+              </div>
             </div>
-            <p className="text-[10px] text-amber-800">Simulate worker progression through the 11 PRD lifecycle stages:</p>
-            <div className="flex flex-wrap gap-1.5">
-              {[
-                { st: 'QUOTATIONS_RECEIVED', label: '1. Quotes In' },
-                { st: 'WORKER_CONFIRMED', label: '2. Pro Confirms' },
-                { st: 'ON_THE_WAY', label: '3. En Route' },
-                { st: 'ARRIVED', label: '4. Arrived' },
-                { st: 'INSPECTION', label: '5. Inspect' },
-                { st: 'WORK_COMPLETED', label: '6. Work Done' },
-                { st: 'CLOSED', label: '7. Close Job' }
-              ].map((btn) => (
-                <button
-                  key={btn.st}
-                  onClick={() => onUpdateJobStatus(job.id, btn.st)}
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition ${
-                    job.status === btn.st 
-                      ? 'bg-amber-600 text-white border-amber-600' 
-                      : 'bg-white text-amber-900 border-amber-300 hover:bg-amber-100'
-                  }`}
-                >
-                  {btn.label}
-                </button>
-              ))}
-            </div>
+            <span className="text-[9px] bg-emerald-200 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+              SECURE
+            </span>
           </div>
 
           {/* QUOTATIONS SECTION (If waiting for quotes or quotes received) */}
@@ -107,13 +88,7 @@ export default function JobDetailModal({
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-1">
                   <Clock className="w-5 h-5 text-emerald-600 mx-auto animate-spin" />
                   <p className="font-bold text-slate-800 text-xs">Matching Verified Technicians...</p>
-                  <p className="text-[10px] text-slate-400">Pros in Indirapuram & Noida are reviewing your request.</p>
-                  <button 
-                    onClick={() => onUpdateJobStatus(job.id, 'QUOTATIONS_RECEIVED')}
-                    className="mt-2 text-[11px] font-bold text-emerald-600 underline"
-                  >
-                    Tap to generate incoming quotes
-                  </button>
+                  <p className="text-[10px] text-slate-400">Pros near your locality are reviewing your request.</p>
                 </div>
               ) : (
                 <div className="space-y-2.5">

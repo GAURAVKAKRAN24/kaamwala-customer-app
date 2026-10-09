@@ -159,3 +159,23 @@ class CustomerJob {
     required this.quotes,
   });
 }
+
+class AppUser {
+  final String id;
+  final String name;
+  final String email;
+  final String phone;
+  final String avatar;
+  final String authProvider; // 'google', 'phone', 'email'
+  final bool isVerified;
+
+  const AppUser({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.avatar,
+    required this.authProvider,
+    this.isVerified = true,
+  });
+}

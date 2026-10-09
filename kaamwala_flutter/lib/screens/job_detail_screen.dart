@@ -127,9 +127,22 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(
-                          'STAGE ${stageIndex + 1} OF 12',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFA7F3D0),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'BOOKING #${widget.job.id}',
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
                       const Spacer(),
@@ -139,7 +152,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Text(
                     _stageTitles[currentStatus] ?? currentStatus,
                     style: const TextStyle(
@@ -157,122 +170,63 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               ),
             ),
 
-            // Demo Controls Bar (For user test & evaluation)
+            // Live Doorstep Status Progress Card
             Container(
               margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2)),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.touch_app, color: Color(0xFF2563EB), size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Interactive Lifecycle Simulator',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E40AF), fontSize: 13),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.bolt, color: Color(0xFF059669), size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Doorstep Service Dispatch',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            Text(
+                              currentStatus == 'CLOSED' ? 'Service finished & covered under 30-day warranty' : 'Verified KaamWala Pro allocated to your locality',
+                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tap below to simulate moving forward to the next lifecycle stage as defined in PRD specs.',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF3B82F6)),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
+                  // Real 4-step Milestone Bar
                   Row(
                     children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              widget.appState.advanceStage();
-                            });
-                          },
-                          icon: const Icon(Icons.fast_forward, size: 16),
-                          label: Text(
-                            stageIndex < AppState.lifecycleStages.length - 1
-                                ? 'Next: ${_stageTitles[AppState.lifecycleStages[stageIndex + 1]]}'
-                                : 'Completed',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            elevation: 0,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            widget.appState.resetJobDemo();
-                          });
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF2563EB),
-                          side: const BorderSide(color: Color(0xFF93C5FD)),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        ),
-                        child: const Text('Reset', style: TextStyle(fontSize: 12)),
-                      ),
+                      _buildMilestoneStep('Booked', true),
+                      _buildMilestoneLine(stageIndex >= 3),
+                      _buildMilestoneStep('Confirmed', stageIndex >= 3),
+                      _buildMilestoneLine(stageIndex >= 4),
+                      _buildMilestoneStep('En Route', stageIndex >= 4),
+                      _buildMilestoneLine(stageIndex >= 8),
+                      _buildMilestoneStep('Completed', stageIndex >= 8),
                     ],
                   ),
                 ],
-              ),
-            ),
-
-            // Horizontal visual stepper
-            Container(
-              height: 70,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: AppState.lifecycleStages.length,
-                itemBuilder: (context, index) {
-                  final stage = AppState.lifecycleStages[index];
-                  final isPassed = stageIndex >= index;
-                  final isCurrent = stageIndex == index;
-
-                  return Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundColor: isCurrent
-                              ? const Color(0xFF059669)
-                              : (isPassed ? const Color(0xFFA7F3D0) : Colors.grey.shade200),
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: isCurrent ? Colors.white : (isPassed ? const Color(0xFF065F46) : Colors.grey.shade600),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          stage.split('_').first,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                            color: isCurrent ? const Color(0xFF059669) : Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
               ),
             ),
 
@@ -612,6 +566,41 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
         ),
       ],
+    );
+  }
+
+  Widget _buildMilestoneStep(String title, bool isDone) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 12,
+          backgroundColor: isDone ? const Color(0xFF059669) : Colors.grey.shade200,
+          child: Icon(
+            isDone ? Icons.check : Icons.circle,
+            size: 12,
+            color: isDone ? Colors.white : Colors.grey.shade400,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isDone ? FontWeight.bold : FontWeight.w500,
+            color: isDone ? const Color(0xFF059669) : Colors.grey.shade500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMilestoneLine(bool isDone) {
+    return Expanded(
+      child: Container(
+        height: 2,
+        margin: const EdgeInsets.only(bottom: 16),
+        color: isDone ? const Color(0xFF059669) : Colors.grey.shade300,
+      ),
     );
   }
 }

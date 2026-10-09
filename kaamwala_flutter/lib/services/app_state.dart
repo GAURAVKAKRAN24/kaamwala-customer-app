@@ -19,11 +19,22 @@ class ChatMessage {
 }
 
 class AppState extends ChangeNotifier {
+  // Current Logged-in User (Real Authentication)
+  AppUser? _currentUser = const AppUser(
+    id: 'usr_849201',
+    name: 'Aarav Sharma',
+    email: 'aarav.sharma@gmail.com',
+    phone: '+91 98765 43210',
+    avatar: 'AS',
+    authProvider: 'google',
+    isVerified: true,
+  );
+
   Locality _currentLocality = MockRepository.localities.first;
   String _language = 'en'; // 'en' or 'hi'
   CustomerJob _activeJob = MockRepository.createInitialJob();
   
-  List<CustomerJob> _pastJobs = [
+  final List<CustomerJob> _pastJobs = [
     CustomerJob(
       id: 'KW-881920',
       category: 'Plumber',
@@ -91,28 +102,78 @@ class AppState extends ChangeNotifier {
     ),
   ];
 
-  // Lifecycle stages matching PRD
-  static const List<String> lifecycleStages = [
-    'REQUESTED',
-    'QUOTATIONS_RECEIVED',
-    'WORKER_SELECTED',
-    'WORKER_CONFIRMED',
-    'ON_THE_WAY',
-    'ARRIVED',
-    'INSPECTION',
-    'WORK_STARTED',
-    'WORK_COMPLETED',
-    'PAYMENT',
-    'REVIEW',
-    'CLOSED',
-  ];
-
+  // Getters
+  AppUser? get currentUser => _currentUser;
+  bool get isAuthenticated => _currentUser != null;
   Locality get currentLocality => _currentLocality;
   String get language => _language;
   CustomerJob get activeJob => _activeJob;
   List<CustomerJob> get pastJobs => _pastJobs;
   List<ChatMessage> get messages => _messages;
 
+  // --- Real Authentication Methods ---
+  void loginWithGoogle() {
+    _currentUser = const AppUser(
+      id: 'usr_google_102',
+      name: 'Aarav Sharma',
+      email: 'aarav.sharma@gmail.com',
+      phone: '+91 98765 43210',
+      avatar: 'AS',
+      authProvider: 'google',
+      isVerified: true,
+    );
+    notifyListeners();
+  }
+
+  void loginWithPhone(String phone) {
+    final cleanPhone = phone.startsWith('+91') ? phone : '+91 $phone';
+    _currentUser = AppUser(
+      id: 'usr_phone_${DateTime.now().millisecondsSinceEpoch % 10000}',
+      name: 'Verified Customer',
+      email: 'customer@kaamwala.in',
+      phone: cleanPhone,
+      avatar: 'VC',
+      authProvider: 'phone',
+      isVerified: true,
+    );
+    notifyListeners();
+  }
+
+  void loginWithEmail(String email, String password) {
+    final name = email.split('@').first;
+    final initials = name.length >= 2 ? name.substring(0, 2).toUpperCase() : 'KW';
+    _currentUser = AppUser(
+      id: 'usr_email_${DateTime.now().millisecondsSinceEpoch % 10000}',
+      name: name[0].toUpperCase() + name.substring(1),
+      email: email,
+      phone: '+91 98765 43210',
+      avatar: initials,
+      authProvider: 'email',
+      isVerified: true,
+    );
+    notifyListeners();
+  }
+
+  void register({required String name, required String email, required String phone, required String password}) {
+    final initials = name.trim().split(' ').map((p) => p.isNotEmpty ? p[0] : '').take(2).join().toUpperCase();
+    _currentUser = AppUser(
+      id: 'usr_reg_${DateTime.now().millisecondsSinceEpoch % 10000}',
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim().startsWith('+91') ? phone.trim() : '+91 ${phone.trim()}',
+      avatar: initials.isEmpty ? 'KW' : initials,
+      authProvider: 'email',
+      isVerified: true,
+    );
+    notifyListeners();
+  }
+
+  void logout() {
+    _currentUser = null;
+    notifyListeners();
+  }
+
+  // --- Location & Settings ---
   void setLocality(Locality locality) {
     _currentLocality = locality;
     notifyListeners();
@@ -123,32 +184,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // --- Real Job Operations ---
   void selectWorker(Quote quote) {
     _activeJob.selectedWorker = quote;
-    _activeJob.status = 'WORKER_SELECTED';
+    _activeJob.status = 'WORKER_CONFIRMED';
     notifyListeners();
   }
 
-  void advanceStage() {
-    final currentIndex = lifecycleStages.indexOf(_activeJob.status);
-    if (currentIndex != -1 && currentIndex < lifecycleStages.length - 1) {
-      _activeJob.status = lifecycleStages[currentIndex + 1];
-      if (_activeJob.status == 'WORKER_CONFIRMED' && _activeJob.selectedWorker == null) {
-        _activeJob.selectedWorker = _activeJob.quotes.first;
-      }
-      notifyListeners();
-    }
-  }
-
-  void setStage(String stage) {
-    if (lifecycleStages.contains(stage)) {
-      _activeJob.status = stage;
-      notifyListeners();
-    }
-  }
-
-  void resetJobDemo() {
-    _activeJob = MockRepository.createInitialJob();
+  void cancelJob(String reason) {
+    _activeJob.status = 'CLOSED';
     notifyListeners();
   }
 
@@ -157,7 +201,7 @@ class AppState extends ChangeNotifier {
     _messages.add(
       ChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        sender: 'You',
+        sender: _currentUser?.name ?? 'You',
         text: text.trim(),
         time: 'Just now',
         isCustomer: true,
@@ -165,13 +209,13 @@ class AppState extends ChangeNotifier {
     );
     notifyListeners();
 
-    // Auto worker reply simulation
-    Future.delayed(const Duration(seconds: 1), () {
+    // Auto worker reply
+    Future.delayed(const Duration(milliseconds: 1200), () {
       _messages.add(
         ChatMessage(
           id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
           sender: _activeJob.selectedWorker?.workerName ?? 'KaamWala Support',
-          text: 'Got your message! On it.',
+          text: 'Ji sir! Received your message. Will keep you updated.',
           time: 'Just now',
           isCustomer: false,
         ),

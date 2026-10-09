@@ -5,6 +5,7 @@ import '../services/mock_data.dart';
 import '../widgets/location_picker_sheet.dart';
 import '../widgets/service_request_sheet.dart';
 import 'job_detail_screen.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final AppState appState;
@@ -125,18 +126,47 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
 
-                        // Emergency SOS
-                        IconButton(
-                          icon: const Icon(Icons.shield_outlined, color: Color(0xFF059669)),
-                          tooltip: 'Safety Shield',
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('KaamWala 24x7 Customer Safety Shield & 112 Helpline Active'),
-                                backgroundColor: Color(0xFF059669),
+                        // User Auth Avatar or Login Button
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LoginScreen(
+                                  appState: appState,
+                                  onLoginSuccess: () => Navigator.pop(context),
+                                ),
                               ),
                             );
                           },
+                          borderRadius: BorderRadius.circular(20),
+                          child: appState.currentUser != null
+                              ? CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: const Color(0xFF059669),
+                                  child: Text(
+                                    appState.currentUser!.avatar,
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                                  ),
+                                )
+                              : Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFECFDF5),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.person, size: 14, color: Color(0xFF059669)),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Login',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF065F46)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                         ),
                       ],
                     ),

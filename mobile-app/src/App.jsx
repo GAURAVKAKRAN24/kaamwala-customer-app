@@ -12,11 +12,23 @@ import ChatModal from './components/ChatModal';
 import PaymentModal from './components/PaymentModal';
 import ReviewModal from './components/ReviewModal';
 import MaskedCallModal from './components/MaskedCallModal';
+import AuthModal from './components/AuthModal';
 
 export default function App() {
   // Navigation & Language
   const [activeTab, setActiveTab] = useState('home');
   const [lang, setLang] = useState('en');
+
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState({
+    id: 'usr-101',
+    name: 'Aarav Sharma',
+    phone: '+91 98765 43210',
+    email: 'aarav.sharma@gmail.com',
+    avatar: 'AS',
+    isAadhaarVerified: true
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Location State (Auto-detected default)
   const [activeLocation, setActiveLocation] = useState('Indirapuram, Ghaziabad (Shipra Sun City)');
@@ -166,21 +178,30 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Header: Language toggle + Notifications */}
+          {/* Right Header: Language toggle + User Avatar / Login */}
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-xl text-[11px] font-extrabold text-slate-800 transition"
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2 py-1 rounded-xl text-[11px] font-extrabold text-slate-800 transition"
             >
-              {lang === 'en' ? 'हिन्दी' : 'English'}
+              {lang === 'en' ? 'हिन्दी' : 'EN'}
             </button>
-            <button 
-              onClick={() => showToast("No new system alerts")}
-              className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 relative"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="w-2 h-2 rounded-full bg-orange-500 absolute top-1.5 right-1.5"></span>
-            </button>
+            {currentUser ? (
+              <button 
+                onClick={() => setActiveTab('profile')}
+                className="w-8 h-8 rounded-xl bg-emerald-600 text-white font-black text-xs flex items-center justify-center shadow-xs hover:bg-emerald-700 transition"
+                title={currentUser.name}
+              >
+                {currentUser.avatar}
+              </button>
+            ) : (
+              <button 
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-xs transition"
+              >
+                Login
+              </button>
+            )}
           </div>
 
         </div>
@@ -483,21 +504,40 @@ export default function App() {
         {/* -------------------- TAB 4: PROFILE -------------------- */}
         {activeTab === 'profile' && (
           <div className="space-y-4">
-            {/* User Profile Card */}
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 text-white shadow-md flex items-center gap-3.5">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white font-black text-xl flex items-center justify-center border-2 border-white/20">
-                R
-              </div>
-              <div className="flex-1">
-                <h3 className="font-extrabold text-sm text-white">Rahul Sharma</h3>
-                <p className="text-xs text-slate-300 font-mono">+91 9876543210</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    Aadhaar Verified Customer
-                  </span>
+            {/* User Profile Card or Login Prompt */}
+            {currentUser ? (
+              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 text-white shadow-md flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white font-black text-xl flex items-center justify-center border-2 border-white/20">
+                  {currentUser.avatar}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-extrabold text-sm text-white">{currentUser.name}</h3>
+                  <p className="text-xs text-slate-300 font-mono">{currentUser.phone}</p>
+                  <p className="text-[10px] text-slate-400">{currentUser.email}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      Aadhaar Verified Customer
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                  <User className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Welcome to KaamWala</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Sign in for quick bookings, instant quotes & tracking</p>
+                </div>
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-xs shadow-md shadow-emerald-600/20 transition"
+                >
+                  Sign In or Register
+                </button>
+              </div>
+            )}
 
             {/* Settings Options */}
             <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100 overflow-hidden text-xs">
@@ -542,6 +582,19 @@ export default function App() {
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </div>
+
+              {currentUser && (
+                <div 
+                  onClick={() => {
+                    setCurrentUser(null);
+                    showToast("Logged out successfully");
+                  }}
+                  className="p-3.5 flex items-center justify-between hover:bg-red-50 text-red-600 cursor-pointer"
+                >
+                  <span className="font-bold">Log Out</span>
+                  <ChevronRight className="w-4 h-4 text-red-400" />
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -676,6 +729,15 @@ export default function App() {
         isOpen={isCallOpen}
         onClose={() => setIsCallOpen(false)}
         workerName={callWorkerName}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          showToast(`Welcome back, ${user.name}!`);
+        }}
       />
 
       {/* Toast message pop-in */}
