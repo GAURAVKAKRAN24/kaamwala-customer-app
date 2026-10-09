@@ -7,6 +7,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,9 +39,50 @@ jobs:
         working-directory: kaamwala_flutter
         run: flutter build apk --release
 
+      - name: Prepare Named APK
+        run: cp kaamwala_flutter/build/app/outputs/flutter-apk/app-release.apk KaamWala-Customer-App.apk
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: kaamwala-release-apk
-          path: kaamwala_flutter/build/app/outputs/flutter-apk/app-release.apk
+          path: KaamWala-Customer-App.apk
           if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          tag_name: v1.0.0
+          name: "KaamWala Customer App v1.0.0 (Release APK)"
+          body: |
+            ### 🚀 KaamWala Customer Android Mobile App (Release v1.0.0)
+            
+            This is the official compiled release APK for the **KaamWala Customer Mobile App**.
+            
+            #### 📱 What's Included:
+            - **Pure Android App** built with Flutter & Material 3
+            - **First-Pickup / First-Accept Model (Uber/Ola Style)**:
+              - Real-time broadcasting to 12 nearby verified pros within 3km
+              - Atomic lock first-accept (no quote comparison, no bargaining)
+            - **11-Stage Doorstep Lifecycle Timeline**:
+              - Live technician status tracking
+              - Mandatory **Inspection Approval Gate** (Approve estimate before work begins)
+              - Customer **Work Completion Confirmation Gate**
+            - **KaamWala Wallet**:
+              - Live ₹250 balance, passbook transaction ledger, instant 1-tap bill discount
+            - **Refer & Earn Program**:
+              - Flat ₹100 reward per referral with code `ANKIT100` & WhatsApp sharing
+            - **Real Indian Geolocation Hubs**:
+              - Autocomplete search & GPS auto-detection across major Indian cities
+            - **Masked Calling & Safety Shield**:
+              - 24x7 Helpline `1800-890-4128` & Emergency SOS
+            
+            ---
+            ### 📲 How to Install:
+            1. Download `KaamWala-Customer-App.apk` below directly to your Android device.
+            2. Tap the downloaded file and select **Install**.
+            3. If prompted, enable *"Install from this source"* in your Android settings.
+          files: KaamWala-Customer-App.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
