@@ -28,42 +28,44 @@ class _ReviewSheetState extends State<ReviewSheet> {
   }
 
   void _submit() {
-    widget.appState.submitReview(
-      rating: _overallRating,
-      quality: _quality,
-      behaviour: _behaviour,
-      punctuality: _punctuality,
-      priceFairness: _fairness,
-      comment: _commentController.text.trim(),
-    );
+    widget.appState.submitReview();
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Thank you! Your verified rating helps our community of trusted workers.'),
-        backgroundColor: Color(0xFF059669),
+        content: Row(
+          children: [
+            Icon(Icons.verified, color: Colors.white),
+            SizedBox(width: 8),
+            Expanded(child: Text('Thank you! Your verified rating helps our community.')),
+          ],
+        ),
+        backgroundColor: Color(0xFF0F766E),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final workerName = widget.appState.activeJob.selectedWorker?.workerName ?? 'Technician';
+    final worker = widget.appState.activeJob.assignedWorker;
+    final workerName = worker?.name ?? 'Ramesh Kumar';
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.86,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
+          // Drag handle
           Center(
             child: Container(
               margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 48,
-              height: 5,
+              width: 44,
+              height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: const Color(0xFFE4E4E7),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -72,15 +74,15 @@ class _ReviewSheetState extends State<ReviewSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
-                const Icon(Icons.star, color: Colors.amber, size: 28),
+                const Icon(Icons.star, color: Colors.amber, size: 24),
                 const SizedBox(width: 10),
                 const Text(
                   'Rate & Review Service',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF18181B)),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: Color(0xFF71717A)),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -95,20 +97,23 @@ class _ReviewSheetState extends State<ReviewSheet> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   CircleAvatar(
-                    radius: 36,
-                    backgroundColor: const Color(0xFF059669).withOpacity(0.1),
-                    child: const Icon(Icons.person, size: 40, color: Color(0xFF059669)),
+                    radius: 34,
+                    backgroundColor: const Color(0xFF18181B),
+                    child: Text(
+                      worker?.avatar ?? 'RK',
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'How was your experience with $workerName?',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF18181B)),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
+                  const SizedBox(height: 4),
+                  const Text(
                     'KaamWala Verified Review Protocol',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF71717A)),
                   ),
                   const SizedBox(height: 16),
 
@@ -132,8 +137,8 @@ class _ReviewSheetState extends State<ReviewSheet> {
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Detailed Sub-Ratings (PRD Spec)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      'Detailed Sub-Ratings',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF18181B)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -144,11 +149,11 @@ class _ReviewSheetState extends State<ReviewSheet> {
                   _buildSubRatingRow('Price Fairness', _fairness, (val) => setState(() => _fairness = val)),
 
                   const SizedBox(height: 16),
-                  Align(
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Write Feedback (Optional)',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey.shade800),
+                      style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF3F3F46), fontSize: 13),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -157,12 +162,16 @@ class _ReviewSheetState extends State<ReviewSheet> {
                     maxLines: 3,
                     decoration: InputDecoration(
                       hintText: 'Polite technician, cleaned up after repair, highly recommended...',
-                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                      hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFF0F766E), width: 1.5),
                       ),
                     ),
                   ),
@@ -172,22 +181,26 @@ class _ReviewSheetState extends State<ReviewSheet> {
           ),
 
           // Submit button
-          Padding(
-            padding: const EdgeInsets.all(20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.grey.shade200)),
+            ),
             child: SizedBox(
               width: double.infinity,
+              height: 52,
               child: ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF059669),
+                  backgroundColor: const Color(0xFF0F766E),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
                 ),
                 child: const Text(
                   'Submit Verified Review',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ),
             ),
@@ -203,7 +216,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF334155))),
+          Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF3F3F46))),
           Row(
             children: List.generate(5, (index) {
               final star = index + 1;
@@ -213,7 +226,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 2),
                   child: Icon(
                     rating >= star ? Icons.star : Icons.star_border,
-                    size: 22,
+                    size: 20,
                     color: Colors.amber,
                   ),
                 ),

@@ -19,9 +19,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final List<String> _quickReplies = [
     'Are you on the way?',
-    'Please call when you reach the gate.',
-    'I am at Flat 402, 4th floor.',
-    'Do you need a ladder or stool?',
+    'Gate code is 204.',
+    'Please call on arrival.',
+    'Do you have genuine copper pipe?',
   ];
 
   @override
@@ -39,21 +39,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final assignedWorker = widget.appState.activeJob.selectedWorker;
-    final workerName = assignedWorker?.workerName ?? 'Manoj Kumar (Technician)';
+    final assignedWorker = widget.appState.activeJob.assignedWorker;
+    final workerName = assignedWorker?.name ?? 'Ramesh Kumar (AC Expert)';
+    final workerAvatar = assignedWorker?.avatar ?? 'RK';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        foregroundColor: const Color(0xFF18181B),
         elevation: 0.5,
         title: Row(
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: const Color(0xFF059669).withOpacity(0.15),
-              child: const Icon(Icons.person, color: Color(0xFF059669), size: 22),
+              backgroundColor: const Color(0xFF18181B),
+              child: Text(
+                workerAvatar,
+                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -63,9 +67,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   Text(workerName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const Row(
                     children: [
-                      CircleAvatar(radius: 3, backgroundColor: Color(0xFF059669)),
+                      CircleAvatar(radius: 3, backgroundColor: Color(0xFF10B981)),
                       SizedBox(width: 4),
-                      Text('Online • In-App Masked Bridge', style: TextStyle(fontSize: 10, color: Color(0xFF059669))),
+                      Text('Online • In-App Masked Bridge', style: TextStyle(fontSize: 10, color: Color(0xFF0F766E))),
                     ],
                   ),
                 ],
@@ -75,22 +79,16 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.call, color: Color(0xFF059669)),
+            icon: const Icon(Icons.call, color: Color(0xFF0F766E)),
             tooltip: 'Secure Masked Call',
             onPressed: () {
-              if (assignedWorker != null) {
-                showDialog(
-                  context: context,
-                  builder: (context) => MaskedCallDialog(
-                    workerName: assignedWorker.workerName,
-                    workerPhoto: assignedWorker.workerPhoto,
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No technician assigned yet to call.')),
-                );
-              }
+              showDialog(
+                context: context,
+                builder: (context) => MaskedCallDialog(
+                  workerName: workerName,
+                  workerPhoto: workerAvatar,
+                ),
+              );
             },
           ),
         ],
@@ -100,15 +98,15 @@ class _ChatScreenState extends State<ChatScreen> {
           // Privacy banner
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: const Color(0xFFECFDF5),
+            color: const Color(0xFFF0FDFA),
             child: const Row(
               children: [
-                Icon(Icons.shield_outlined, color: Color(0xFF059669), size: 16),
+                Icon(Icons.shield_outlined, color: Color(0xFF0F766E), size: 16),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'KaamWala Privacy Guard: Phone numbers are masked for your safety.',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF065F46), fontWeight: FontWeight.w500),
+                    'KaamWala Privacy Guard: Phone numbers are masked for safety.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF0F766E), fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -129,7 +127,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: msg.isCustomer ? const Color(0xFF059669) : Colors.white,
+                      color: msg.isCustomer ? const Color(0xFF0F766E) : Colors.white,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(16),
                         topRight: const Radius.circular(16),
@@ -146,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Text(
                           msg.text,
                           style: TextStyle(
-                            color: msg.isCustomer ? Colors.white : const Color(0xFF1E293B),
+                            color: msg.isCustomer ? Colors.white : const Color(0xFF18181B),
                             fontSize: 14,
                           ),
                         ),
@@ -158,12 +156,12 @@ class _ChatScreenState extends State<ChatScreen> {
                               msg.time,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: msg.isCustomer ? Colors.white70 : Colors.grey.shade500,
+                                color: msg.isCustomer ? const Color(0xFFCCFBF1) : const Color(0xFFA1A1AA),
                               ),
                             ),
                             if (msg.isCustomer) ...[
                               const SizedBox(width: 4),
-                              const Icon(Icons.done_all, size: 12, color: Colors.white70),
+                              const Icon(Icons.done_all, size: 12, color: Color(0xFFCCFBF1)),
                             ],
                           ],
                         ),
@@ -188,7 +186,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 return ActionChip(
                   label: Text(reply, style: const TextStyle(fontSize: 11)),
                   backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.grey.shade300),
+                  side: const BorderSide(color: Color(0xFFE4E4E7)),
                   onPressed: () => _sendMessage(reply),
                 );
               },
@@ -207,13 +205,17 @@ class _ChatScreenState extends State<ChatScreen> {
                     controller: _msgController,
                     decoration: InputDecoration(
                       hintText: 'Type your message...',
-                      hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+                      hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
                       filled: true,
-                      fillColor: const Color(0xFFF1F5F9),
+                      fillColor: const Color(0xFFF8FAFC),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+                        borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: const BorderSide(color: Color(0xFF0F766E), width: 1.5),
                       ),
                     ),
                     onSubmitted: (val) => _sendMessage(),
@@ -222,7 +224,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(width: 8),
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: const Color(0xFF059669),
+                  backgroundColor: const Color(0xFF0F766E),
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white, size: 18),
                     onPressed: () => _sendMessage(),

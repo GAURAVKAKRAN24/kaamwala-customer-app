@@ -4,6 +4,9 @@ class Locality {
   final String area;
   final String city;
   final String state;
+  final String pincode;
+  final double lat;
+  final double lng;
   final bool isPopular;
 
   const Locality({
@@ -12,10 +15,13 @@ class Locality {
     required this.area,
     required this.city,
     required this.state,
+    required this.pincode,
+    required this.lat,
+    required this.lng,
     this.isPopular = false,
   });
 
-  String get fullAddress => '$name, $city ($area)';
+  String get fullAddress => '$name, $area, $city • $pincode';
 }
 
 class SubService {
@@ -39,7 +45,7 @@ class ServiceCategory {
   final String name;
   final String nameHi;
   final String icon;
-  final String badge;
+  final String bookingCount;
   final String desc;
   final int startingPrice;
   final List<SubService> subServices;
@@ -49,7 +55,7 @@ class ServiceCategory {
     required this.name,
     required this.nameHi,
     required this.icon,
-    required this.badge,
+    required this.bookingCount,
     required this.desc,
     required this.startingPrice,
     required this.subServices,
@@ -59,26 +65,29 @@ class ServiceCategory {
 class WorkerProfile {
   final String id;
   final String name;
+  final String avatar;
   final String category;
   final List<String> skills;
   final String bio;
-  final int experienceYears;
+  final String experienceYears;
   final double rating;
   final int totalReviews;
   final int jobsCompleted;
-  final int onTimeRate;
+  final double onTimeRate;
+  final double completionRate;
   final String responseTime;
   final int visitFee;
   final bool isIdentityVerified;
   final bool isSkillVerified;
   final bool isTopRated;
   final bool isFastResponder;
-  final String photoUrl;
+  final String distance;
   final String serviceAreas;
 
   const WorkerProfile({
     required this.id,
     required this.name,
+    required this.avatar,
     required this.category,
     required this.skills,
     required this.bio,
@@ -87,44 +96,15 @@ class WorkerProfile {
     required this.totalReviews,
     required this.jobsCompleted,
     required this.onTimeRate,
+    required this.completionRate,
     required this.responseTime,
     required this.visitFee,
     required this.isIdentityVerified,
     required this.isSkillVerified,
     required this.isTopRated,
     required this.isFastResponder,
-    required this.photoUrl,
+    required this.distance,
     required this.serviceAreas,
-  });
-}
-
-class Quote {
-  final String id;
-  final String workerId;
-  final String workerName;
-  final double workerRating;
-  final int workerJobs;
-  final String workerPhoto;
-  final int visitFee;
-  final int estimateMin;
-  final int estimateMax;
-  final bool partsExtra;
-  final String message;
-  final String arrivalTime;
-
-  const Quote({
-    required this.id,
-    required this.workerId,
-    required this.workerName,
-    required this.workerRating,
-    required this.workerJobs,
-    required this.workerPhoto,
-    required this.visitFee,
-    required this.estimateMin,
-    required this.estimateMax,
-    this.partsExtra = true,
-    required this.message,
-    required this.arrivalTime,
   });
 }
 
@@ -140,8 +120,11 @@ class CustomerJob {
   final int visitFee;
   int estimatedAmount;
   int finalAmount;
-  Quote? selectedWorker;
-  List<Quote> quotes;
+  WorkerProfile? assignedWorker;
+  final List<String> mediaUrls;
+  final String? arrivalEta;
+  bool isInspectionApproved;
+  bool isCompletedConfirmed;
 
   CustomerJob({
     required this.id,
@@ -155,27 +138,82 @@ class CustomerJob {
     required this.visitFee,
     required this.estimatedAmount,
     required this.finalAmount,
-    this.selectedWorker,
-    required this.quotes,
+    this.assignedWorker,
+    this.mediaUrls = const [],
+    this.arrivalEta,
+    this.isInspectionApproved = false,
+    this.isCompletedConfirmed = false,
+  });
+}
+
+class WalletTransaction {
+  final String id;
+  final String type; // 'CREDIT' or 'DEBIT'
+  final double amount;
+  final String title;
+  final String date;
+  final String status;
+
+  const WalletTransaction({
+    required this.id,
+    required this.type,
+    required this.amount,
+    required this.title,
+    required this.date,
+    required this.status,
+  });
+}
+
+class ReferralInfo {
+  final String code;
+  final double rewardPerReferral;
+  final double friendDiscount;
+  final int totalReferrals;
+  final double totalEarned;
+
+  const ReferralInfo({
+    required this.code,
+    required this.rewardPerReferral,
+    required this.friendDiscount,
+    required this.totalReferrals,
+    required this.totalEarned,
   });
 }
 
 class AppUser {
   final String id;
-  final String name;
-  final String email;
+  String name;
+  String email;
   final String phone;
-  final String avatar;
-  final String authProvider; // 'google', 'phone', 'email'
-  final bool isVerified;
+  String avatar;
+  final String authProvider;
+  final bool isAadhaarVerified;
+  final int profileCompletion; // 0 to 100
 
-  const AppUser({
+  AppUser({
     required this.id,
     required this.name,
     required this.email,
     required this.phone,
     required this.avatar,
     required this.authProvider,
-    this.isVerified = true,
+    this.isAadhaarVerified = true,
+    this.profileCompletion = 40,
+  });
+}
+
+class NotificationItem {
+  final String id;
+  final String title;
+  final String subtitle;
+  final String time;
+  final bool isUnread;
+
+  const NotificationItem({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.time,
+    this.isUnread = true,
   });
 }

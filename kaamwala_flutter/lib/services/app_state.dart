@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/app_models.dart';
 import 'mock_data.dart';
@@ -8,190 +9,299 @@ class ChatMessage {
   final String text;
   final String time;
   final bool isCustomer;
+  final String? mediaUrl;
 
-  ChatMessage({
+  const ChatMessage({
     required this.id,
     required this.sender,
     required this.text,
     required this.time,
     required this.isCustomer,
+    this.mediaUrl,
   });
 }
 
 class AppState extends ChangeNotifier {
-  // Current Logged-in User (Real Authentication)
-  AppUser? _currentUser = const AppUser(
-    id: 'usr_849201',
-    name: 'Aarav Sharma',
-    email: 'aarav.sharma@gmail.com',
+  // Onboarding Screen Tracker
+  String _currentRoute = 'splash'; // 'splash', 'lang', 'address', 'otp', 'app'
+
+  // Locale (en / hi)
+  String _language = 'en';
+
+  // Current Logged In User
+  AppUser _currentUser = AppUser(
+    id: 'usr_ankit_281',
+    name: 'Ankit Verma',
+    email: 'ankit@email.com',
     phone: '+91 98765 43210',
-    avatar: 'AS',
-    authProvider: 'google',
-    isVerified: true,
+    avatar: 'A',
+    authProvider: 'phone',
+    isAadhaarVerified: true,
+    profileCompletion: 40, // Shows Incomplete banner as specified
   );
 
+  // Active Location (Sector 18, Noida default)
   Locality _currentLocality = MockRepository.localities.first;
-  String _language = 'en'; // 'en' or 'hi'
-  CustomerJob _activeJob = MockRepository.createInitialJob();
-  
-  final List<CustomerJob> _pastJobs = [
+
+  // Active Job & History
+  CustomerJob _activeJob = MockRepository.createInitialActiveJob();
+  final List<CustomerJob> _allJobs = [
+    MockRepository.createInitialActiveJob(),
     CustomerJob(
-      id: 'KW-881920',
-      category: 'Plumber',
-      serviceName: 'Bathroom Tap Leakage Repair',
+      id: 'KW-28310',
+      category: 'plumber',
+      serviceName: 'Plumber • Leakage Repair',
       description: 'Kitchen mixer tap washer worn out, dripping continuously.',
-      address: 'Flat 402, Shipra Sun City, Indirapuram',
-      date: '15 Sep 2026',
-      time: '02:30 PM',
-      status: 'CLOSED',
+      address: 'Sector 18, Noida • 201301',
+      date: '18 Dec',
+      time: '11:00 AM',
+      status: 'WORK_COMPLETED',
       visitFee: 149,
-      estimatedAmount: 349,
-      finalAmount: 349,
-      selectedWorker: const Quote(
-        id: 'q-past',
-        workerId: 'w2',
-        workerName: 'Rajesh Prajapati',
-        workerRating: 4.85,
-        workerJobs: 240,
-        workerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-        visitFee: 149,
-        estimateMin: 299,
-        estimateMax: 399,
-        message: 'Job completed with 30-day guarantee',
-        arrivalTime: 'Completed',
-      ),
-      quotes: [],
+      estimatedAmount: 650,
+      finalAmount: 650,
+      assignedWorker: MockRepository.workers[1],
     ),
     CustomerJob(
-      id: 'KW-774012',
-      category: 'RO',
-      serviceName: 'RO Purifier Complete Filter Change',
-      description: 'Membrane kit change and sediment filter replacement.',
-      address: 'Flat 402, Shipra Sun City, Indirapuram',
-      date: '28 Aug 2026',
-      time: '11:00 AM',
+      id: 'KW-28102',
+      category: 'electrician',
+      serviceName: 'Electrician • Switchboard Fix',
+      description: 'MCB tripping fix and living room switchboard replacement.',
+      address: 'Sector 18, Noida • 201301',
+      date: '12 Dec',
+      time: '4:00 PM',
       status: 'CLOSED',
-      visitFee: 149,
-      estimatedAmount: 899,
-      finalAmount: 899,
-      quotes: [],
+      visitFee: 199,
+      estimatedAmount: 450,
+      finalAmount: 450,
+      assignedWorker: MockRepository.workers[2],
+    ),
+    CustomerJob(
+      id: 'KW-27911',
+      category: 'ro',
+      serviceName: 'RO Service & Filter Change',
+      description: 'Filter membrane change request.',
+      address: 'Sector 18, Noida • 201301',
+      date: '05 Dec',
+      time: '10:00 AM',
+      status: 'CANCELLED',
+      visitFee: 99,
+      estimatedAmount: 0,
+      finalAmount: 0,
     ),
   ];
 
+  // In-app Messages
   final List<ChatMessage> _messages = [
-    ChatMessage(
+    const ChatMessage(
       id: 'm1',
-      sender: 'Manoj Kumar (Technician)',
-      text: 'Namaste sir! I have accepted your AC service request. Reaching in 20 minutes.',
-      time: '10:15 AM',
+      sender: 'System',
+      text: 'Job KW-28491 created. Broadcasting to verified pros within 3km.',
+      time: '10:12 AM',
       isCustomer: false,
     ),
-    ChatMessage(
+    const ChatMessage(
       id: 'm2',
+      sender: 'System',
+      text: 'Ramesh Kumar accepted your job! Fixed visit charge: ₹199.',
+      time: '10:14 AM',
+      isCustomer: false,
+    ),
+    const ChatMessage(
+      id: 'm3',
+      sender: 'Ramesh Kumar (AC Expert)',
+      text: 'Namaste Ankit ji! I am on the way with genuine copper pipe & foam jet wash pump. Reaching in 12 min.',
+      time: '10:21 AM',
+      isCustomer: false,
+    ),
+    const ChatMessage(
+      id: 'm4',
       sender: 'You',
-      text: 'Great Manoj ji, please call the intercom when you reach the gate.',
-      time: '10:17 AM',
+      text: 'Sure Ramesh ji, gate code is 204. Please call on arrival.',
+      time: '10:22 AM',
       isCustomer: true,
     ),
-    ChatMessage(
-      id: 'm3',
-      sender: 'Manoj Kumar (Technician)',
-      text: 'Sure sir. I have genuine copper pipe spares and foam jet equipment with me.',
-      time: '10:18 AM',
-      isCustomer: false,
+  ];
+
+  // Wallet
+  double _walletBalance = 250.0;
+  final List<WalletTransaction> _walletTransactions = [
+    const WalletTransaction(
+      id: 'tx_1',
+      type: 'CREDIT',
+      amount: 100.0,
+      title: 'Referral Bonus (Friend joined)',
+      date: '08 Oct 2026, 04:30 PM',
+      status: 'SUCCESS',
+    ),
+    const WalletTransaction(
+      id: 'tx_2',
+      type: 'DEBIT',
+      amount: 49.0,
+      title: 'Platform Fee Discount Applied (KW-28491)',
+      date: '09 Oct 2026, 10:15 AM',
+      status: 'SUCCESS',
+    ),
+    const WalletTransaction(
+      id: 'tx_3',
+      type: 'CREDIT',
+      amount: 199.0,
+      title: 'Wallet Topup via UPI',
+      date: '05 Oct 2026, 02:00 PM',
+      status: 'SUCCESS',
     ),
   ];
 
+  // Referral Program
+  ReferralInfo _referralInfo = const ReferralInfo(
+    code: 'ANKIT100',
+    rewardPerReferral: 100.0,
+    friendDiscount: 100.0,
+    totalReferrals: 3,
+    totalEarned: 300.0,
+  );
+
+  // Notifications
+  List<NotificationItem> _notifications = MockRepository.getNotifications();
+
   // Getters
-  AppUser? get currentUser => _currentUser;
-  bool get isAuthenticated => _currentUser != null;
-  Locality get currentLocality => _currentLocality;
+  String get currentRoute => _currentRoute;
   String get language => _language;
+  AppUser get currentUser => _currentUser;
+  Locality get currentLocality => _currentLocality;
   CustomerJob get activeJob => _activeJob;
-  List<CustomerJob> get pastJobs => _pastJobs;
+  List<CustomerJob> get allJobs => _allJobs;
   List<ChatMessage> get messages => _messages;
+  double get walletBalance => _walletBalance;
+  List<WalletTransaction> get walletTransactions => _walletTransactions;
+  ReferralInfo get referralInfo => _referralInfo;
+  List<NotificationItem> get notifications => _notifications;
 
-  // --- Real Authentication Methods ---
-  void loginWithGoogle() {
-    _currentUser = const AppUser(
-      id: 'usr_google_102',
-      name: 'Aarav Sharma',
-      email: 'aarav.sharma@gmail.com',
-      phone: '+91 98765 43210',
-      avatar: 'AS',
-      authProvider: 'google',
-      isVerified: true,
-    );
+  // Onboarding Navigators
+  void navigateTo(String route) {
+    _currentRoute = route;
     notifyListeners();
   }
 
-  void loginWithPhone(String phone) {
-    final cleanPhone = phone.startsWith('+91') ? phone : '+91 $phone';
-    _currentUser = AppUser(
-      id: 'usr_phone_${DateTime.now().millisecondsSinceEpoch % 10000}',
-      name: 'Verified Customer',
-      email: 'customer@kaamwala.in',
-      phone: cleanPhone,
-      avatar: 'VC',
-      authProvider: 'phone',
-      isVerified: true,
-    );
+  void setLanguage(String lang) {
+    _language = lang;
     notifyListeners();
   }
 
-  void loginWithEmail(String email, String password) {
-    final name = email.split('@').first;
-    final initials = name.length >= 2 ? name.substring(0, 2).toUpperCase() : 'KW';
-    _currentUser = AppUser(
-      id: 'usr_email_${DateTime.now().millisecondsSinceEpoch % 10000}',
-      name: name[0].toUpperCase() + name.substring(1),
-      email: email,
-      phone: '+91 98765 43210',
-      avatar: initials,
-      authProvider: 'email',
-      isVerified: true,
-    );
-    notifyListeners();
-  }
-
-  void register({required String name, required String email, required String phone, required String password}) {
-    final initials = name.trim().split(' ').map((p) => p.isNotEmpty ? p[0] : '').take(2).join().toUpperCase();
-    _currentUser = AppUser(
-      id: 'usr_reg_${DateTime.now().millisecondsSinceEpoch % 10000}',
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim().startsWith('+91') ? phone.trim() : '+91 ${phone.trim()}',
-      avatar: initials.isEmpty ? 'KW' : initials,
-      authProvider: 'email',
-      isVerified: true,
-    );
-    notifyListeners();
-  }
-
-  void logout() {
-    _currentUser = null;
-    notifyListeners();
-  }
-
-  // --- Location & Settings ---
   void setLocality(Locality locality) {
     _currentLocality = locality;
     notifyListeners();
   }
 
-  void toggleLanguage() {
-    _language = _language == 'en' ? 'hi' : 'en';
+  // Profile completion
+  void completeProfile({required String name, required String email}) {
+    _currentUser.name = name;
+    _currentUser.email = email;
+    _currentUser.avatar = name.isNotEmpty ? name[0].toUpperCase() : 'A';
+    _currentUser.profileCompletion = 100;
     notifyListeners();
   }
 
-  // --- Real Job Operations ---
-  void selectWorker(Quote quote) {
-    _activeJob.selectedWorker = quote;
-    _activeJob.status = 'WORKER_CONFIRMED';
+  // --- V2.0 FIRST-PICKUP BROADCAST FLOW ---
+  CustomerJob broadcastJob({
+    required String category,
+    required String serviceName,
+    required String description,
+    required String date,
+    required String time,
+    required int budget,
+    required List<String> mediaUrls,
+  }) {
+    final newJob = CustomerJob(
+      id: 'KW-${10000 + (DateTime.now().millisecondsSinceEpoch % 90000)}',
+      category: category,
+      serviceName: serviceName,
+      description: description,
+      address: _currentLocality.fullAddress,
+      date: date,
+      time: time,
+      status: 'BROADCASTING',
+      visitFee: 199,
+      estimatedAmount: budget,
+      finalAmount: budget + 199,
+      mediaUrls: mediaUrls,
+    );
+
+    _activeJob = newJob;
+    _allJobs.insert(0, newJob);
+    notifyListeners();
+
+    // Simulate First Pickup atomic lock after 2 seconds
+    Timer(const Duration(milliseconds: 2200), () {
+      final worker = MockRepository.workers.first;
+      _activeJob.status = 'WORKER_CONFIRMED';
+      _activeJob.assignedWorker = worker;
+      _activeJob.arrivalEta = '12 min';
+
+      _messages.insert(
+        0,
+        ChatMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          sender: worker.name,
+          text: 'Namaste! I have accepted your request for $serviceName. Preparing equipment.',
+          time: 'Just now',
+          isCustomer: false,
+        ),
+      );
+
+      _notifications.insert(
+        0,
+        NotificationItem(
+          id: 'n_${DateTime.now().millisecondsSinceEpoch}',
+          title: '${worker.name} accepted your request!',
+          subtitle: '${_activeJob.id} • Arriving in 12 min',
+          time: 'Just now',
+        ),
+      );
+
+      notifyListeners();
+    });
+
+    return newJob;
+  }
+
+  // Lifecycle updates
+  void updateJobStatus(String newStatus) {
+    _activeJob.status = newStatus;
     notifyListeners();
   }
 
-  void cancelJob(String reason) {
+  void approveInspectionEstimate() {
+    _activeJob.isInspectionApproved = true;
+    _activeJob.status = 'WORK_STARTED';
+    notifyListeners();
+  }
+
+  void confirmCompletion() {
+    _activeJob.isCompletedConfirmed = true;
+    _activeJob.status = 'PAYMENT';
+    notifyListeners();
+  }
+
+  void payBill(String method) {
+    _activeJob.status = 'REVIEW';
+    if (method == 'wallet' && _walletBalance >= _activeJob.finalAmount) {
+      _walletBalance -= _activeJob.finalAmount;
+      _walletTransactions.insert(
+        0,
+        WalletTransaction(
+          id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
+          type: 'DEBIT',
+          amount: _activeJob.finalAmount.toDouble(),
+          title: 'Service Payment (${_activeJob.id})',
+          date: 'Just now',
+          status: 'SUCCESS',
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  void submitReview() {
     _activeJob.status = 'CLOSED';
     notifyListeners();
   }
@@ -201,7 +311,7 @@ class AppState extends ChangeNotifier {
     _messages.add(
       ChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        sender: _currentUser?.name ?? 'You',
+        sender: 'You',
         text: text.trim(),
         time: 'Just now',
         isCustomer: true,
@@ -209,13 +319,13 @@ class AppState extends ChangeNotifier {
     );
     notifyListeners();
 
-    // Auto worker reply
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    // Auto reply from assigned worker
+    Timer(const Duration(milliseconds: 1400), () {
       _messages.add(
         ChatMessage(
           id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
-          sender: _activeJob.selectedWorker?.workerName ?? 'KaamWala Support',
-          text: 'Ji sir! Received your message. Will keep you updated.',
+          sender: _activeJob.assignedWorker?.name ?? 'Ramesh Kumar',
+          text: 'Ji sir! Received. Reaching your doorstep on time.',
           time: 'Just now',
           isCustomer: false,
         ),
@@ -224,46 +334,41 @@ class AppState extends ChangeNotifier {
     });
   }
 
-  void completePayment(String method) {
-    _activeJob.status = 'REVIEW';
-    notifyListeners();
-  }
-
-  void submitReview({
-    required double rating,
-    required double quality,
-    required double behaviour,
-    required double punctuality,
-    required double priceFairness,
-    required String comment,
-  }) {
-    _activeJob.status = 'CLOSED';
-    _pastJobs.insert(0, _activeJob);
-    notifyListeners();
-  }
-
-  void createNewJob({
-    required String category,
-    required String serviceName,
-    required String description,
-    required String date,
-    required String time,
-    required int price,
-  }) {
-    _activeJob = CustomerJob(
-      id: 'KW-${(100000 + DateTime.now().millisecondsSinceEpoch % 900000)}',
-      category: category,
-      serviceName: serviceName,
-      description: description,
-      address: _currentLocality.fullAddress,
-      date: date,
-      time: time,
-      status: 'QUOTATIONS_RECEIVED',
-      visitFee: 149,
-      estimatedAmount: price,
-      finalAmount: price,
-      quotes: MockRepository.createInitialJob().quotes,
+  // Wallet Topup
+  void addWalletMoney(double amount) {
+    _walletBalance += amount;
+    _walletTransactions.insert(
+      0,
+      WalletTransaction(
+        id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
+        type: 'CREDIT',
+        amount: amount,
+        title: 'Wallet Topup via UPI',
+        date: 'Just now',
+        status: 'SUCCESS',
+      ),
     );
     notifyListeners();
+  }
+
+  // Redeem Referral Code
+  bool redeemReferral(String code) {
+    if (code.trim().toUpperCase() == 'FIRST100' || code.trim().length >= 4) {
+      _walletBalance += 100.0;
+      _walletTransactions.insert(
+        0,
+        WalletTransaction(
+          id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
+          type: 'CREDIT',
+          amount: 100.0,
+          title: 'Referral Bonus ($code)',
+          date: 'Just now',
+          status: 'SUCCESS',
+        ),
+      );
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 }

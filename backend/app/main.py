@@ -15,12 +15,13 @@ from backend.app.api.auth import router as auth_router
 from backend.app.api.services import router as services_router
 from backend.app.api.workers import router as workers_router
 from backend.app.api.jobs import router as jobs_router
-from backend.app.api.quotes import router as quotes_router
 from backend.app.api.chat import router as chat_router
 from backend.app.api.payments import router as payments_router
 from backend.app.api.reviews import router as reviews_router
 from backend.app.api.addresses import router as addresses_router
 from backend.app.api.support import router as support_router
+from backend.app.api.wallet import router as wallet_router
+from backend.app.api.geo import router as geo_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,17 +68,17 @@ app.include_router(auth_router, prefix=api_v1_prefix)
 app.include_router(services_router, prefix=api_v1_prefix)
 app.include_router(workers_router, prefix=api_v1_prefix)
 app.include_router(jobs_router, prefix=api_v1_prefix)
-app.include_router(quotes_router, prefix=api_v1_prefix)
 app.include_router(chat_router, prefix=api_v1_prefix)
 app.include_router(payments_router, prefix=api_v1_prefix)
 app.include_router(reviews_router, prefix=api_v1_prefix)
 app.include_router(addresses_router, prefix=api_v1_prefix)
 app.include_router(support_router, prefix=api_v1_prefix)
+app.include_router(wallet_router, prefix=api_v1_prefix)
+app.include_router(geo_router, prefix=api_v1_prefix)
 
 # 4. Global Exception Handler (Generic errors, no sensitive stack trace leakage)
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    # Log securely to server console without exposing sensitive data to client
     print(f"[SECURITY/ERROR] Unhandled Exception at {request.url.path}: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -86,25 +87,10 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "KaamWala Backend API", "version": settings.VERSION}
-
-# Mount Pure React Mobile App (mobile-app/dist) or fallback
-mobile_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "mobile-app", "dist"))
-frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
-
-if os.path.exists(mobile_dist):
-    assets_dir = os.path.join(mobile_dist, "assets")
-    if os.path.exists(assets_dir):
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-        
-    @app.get("/")
-    def serve_mobile_index():
-        return FileResponse(os.path.join(mobile_dist, "index.html"))
-
-if os.path.exists(frontend_dir):
-    app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
-    
-    @app.get("/legacy")
-    def serve_legacy_index():
-        return FileResponse(os.path.join(frontend_dir, "index.html"))
+    return {
+        "status": "healthy",
+        "service": "KaamWala Backend API (Pure Android Engine)",
+        "version": settings.VERSION,
+        "first_pickup_model": True
+    }
 

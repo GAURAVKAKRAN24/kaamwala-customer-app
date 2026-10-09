@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'screens/address_screen.dart';
 import 'screens/bookings_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/language_screen.dart';
+import 'screens/mobile_auth_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/app_state.dart';
 
 void main() {
@@ -38,27 +43,43 @@ class _KaamWalaAppState extends State<KaamWalaApp> {
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF059669),
-              primary: const Color(0xFF059669),
-              secondary: const Color(0xFF047857),
+              seedColor: const Color(0xFF0F766E),
+              primary: const Color(0xFF0F766E),
+              secondary: const Color(0xFF115E59),
               surface: Colors.white,
             ),
             scaffoldBackgroundColor: const Color(0xFFF8FAFC),
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.white,
               elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF1E293B)),
+              iconTheme: IconThemeData(color: Color(0xFF18181B)),
               titleTextStyle: TextStyle(
-                color: Color(0xFF1E293B),
+                color: Color(0xFF18181B),
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          home: MainNavigationContainer(appState: _appState),
+          home: _buildCurrentScreen(),
         );
       },
     );
+  }
+
+  Widget _buildCurrentScreen() {
+    switch (_appState.currentRoute) {
+      case 'splash':
+        return SplashScreen(appState: _appState);
+      case 'lang':
+        return LanguageScreen(appState: _appState);
+      case 'address':
+        return AddressScreen(appState: _appState);
+      case 'otp':
+        return MobileAuthScreen(appState: _appState);
+      case 'app':
+      default:
+        return MainNavigationContainer(appState: _appState);
+    }
   }
 }
 
@@ -80,9 +101,13 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
   @override
   Widget build(BuildContext context) {
     final screens = [
-      HomeScreen(appState: widget.appState),
+      HomeScreen(
+        appState: widget.appState,
+        onNavigateTab: (index) => setState(() => _currentIndex = index),
+      ),
       BookingsScreen(appState: widget.appState),
       ChatScreen(appState: widget.appState),
+      NotificationsScreen(appState: widget.appState),
       ProfileScreen(appState: widget.appState),
     ];
 
@@ -110,8 +135,8 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF059669),
-          unselectedItemColor: Colors.grey.shade500,
+          selectedItemColor: const Color(0xFF0F766E),
+          unselectedItemColor: const Color(0xFF71717A),
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           elevation: 0,
@@ -124,7 +149,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
             BottomNavigationBarItem(
               icon: const Icon(Icons.assignment_outlined),
               activeIcon: const Icon(Icons.assignment),
-              label: isHindi ? 'बुकिंग्स' : 'Bookings',
+              label: isHindi ? 'बुकिंग्स' : 'Jobs',
             ),
             BottomNavigationBarItem(
               icon: Stack(
@@ -137,7 +162,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF059669),
+                        color: Color(0xFF0F766E),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -145,7 +170,12 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
                 ],
               ),
               activeIcon: const Icon(Icons.chat_bubble),
-              label: isHindi ? 'चैट' : 'Chat',
+              label: isHindi ? 'चैट' : 'Messages',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.notifications_none),
+              activeIcon: const Icon(Icons.notifications),
+              label: isHindi ? 'अलर्ट' : 'Alerts',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.person_outline),
